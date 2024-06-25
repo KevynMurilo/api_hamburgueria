@@ -12,7 +12,9 @@
 ## Sumário
 
 1. [Introdução](#introdução)
-2. [Endpoints](#endpoints)
+2. [Funcionalidades](#funcionalidades)
+3. [Instalação](#instalação)
+4. [Endpoints](#endpoints)
    - [Mesas](#mesas)
    - [Garçons](#garçons)
    - [Pedidos](#pedidos)
@@ -20,14 +22,38 @@
    - [Produtos](#produtos)
    - [Categorias](#categorias)
    - [Itens Adicionais](#itens-adicionais)
-3. [Modelos de Dados](#modelos-de-dados)
-4. [Exemplos de Requisição](#exemplos-de-requisição)
+5. [Modelos de Dados](#modelos-de-dados)
+6. [Exemplos de Requisição](#exemplos-de-requisição)
 
 ---
 
 ## Introdução
 
 Esta documentação descreve os endpoints e modelos de dados para a API RESTful de uma hamburgueria. A API permite que garçons visualizem mesas disponíveis, registrem pedidos, adicionem itens adicionais aos produtos e enviem pedidos para uma dashboard que imprime os pedidos para a cozinha.
+
+## Funcionalidades
+
+### Garçons
+
+- **Listar Mesas Disponíveis**: Os garçons podem visualizar todas as mesas e seus status (disponível, ocupada, etc.).
+- **Criar Pedidos**: Os garçons podem criar novos pedidos associando-os a mesas e registrando os itens do pedido.
+- **Adicionar Itens ao Pedido**: Os garçons podem adicionar itens aos pedidos, especificando observações como "sem cebola" ou "com queijo extra".
+- **Atualizar Pedidos**: Os garçons podem atualizar o status dos pedidos (por exemplo, de "preparando" para "entregue").
+- **Visualizar Produtos**: Os garçons podem listar todos os produtos disponíveis e suas descrições.
+- **Gerenciar Itens Adicionais**: Os garçons podem adicionar itens adicionais aos produtos no pedido, como queijo extra ou bacon.
+
+### Cozinha
+
+- **Receber Pedidos**: A cozinha recebe os pedidos enviados pelos garçons e pode visualizar os detalhes dos pedidos e suas observações.
+- **Atualizar Status do Pedido**: A cozinha pode atualizar o status dos pedidos para "em preparação", "pronto" ou "entregue".
+
+### Administradores
+
+- **Gerenciar Mesas**: Os administradores podem criar, atualizar e deletar mesas.
+- **Gerenciar Garçons**: Os administradores podem adicionar novos garçons, atualizar informações dos garçons existentes e deletar garçons.
+- **Gerenciar Produtos e Categorias**: Os administradores podem adicionar novos produtos, atualizar produtos existentes, deletar produtos, e gerenciar as categorias desses produtos.
+- **Gerenciar Itens Adicionais**: Os administradores podem adicionar novos itens adicionais, atualizar itens adicionais existentes e deletar itens adicionais.
+
 
 ## Instalação
 
