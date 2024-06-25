@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Mesa {
+  id      Int      @id @default(autoincrement())
+  numero  Int
+  status  StatusMesa @default(disponivel)
+  pedidos Pedido[]
+
+  @@map("mesas")
+}
+
+model Garcom {
+  id     Int      @id @default(autoincrement())
+  nome   String
+  email  String   @unique
+  senha  String
+  pedidos Pedido[]
+
+  @@map("garcons")
+}
+
+model Pedido {
+  id        Int           @id @default(autoincrement())
+  id_mesa    Int
+  id_garcom  Int
+  hora_pedido DateTime
+  status    StatusPedido
+  mesa      Mesa          @relation(fields: [id_mesa], references: [id])
+  garcom    Garcom        @relation(fields: [id_garcom], references: [id])
+  itens     ItemDoPedido[]
+
+  @@map("pedidos")
+}
+
+model ItemDoPedido {
+  id             Int              @id @default(autoincrement())
+  id_pedido       Int
+  id_produto      Int
+  quantidade     Int
+  observacoes    String?
+  pedido         Pedido           @relation(fields: [id_pedido], references: [id])
+  produto        Produto          @relation(fields: [id_produto], references: [id])
+  itensAdicionais ItemDoPedidoItemAdicional[]
+
+  @@map("itens_do_pedidos")
+}
+
+model Produto {
+  id          Int             @id @default(autoincrement())
+  id_categoria Int
+  nome        String
+  descricao   String?
+  preco       Float
+  categoria   Categoria       @relation(fields: [id_categoria], references: [id])
+  itens       ItemDoPedido[]
+
+  @@map("protudos")
+}
+
+model Categoria {
+  id      Int       @id @default(autoincrement())
+  nome    String
+  produtos Produto[]
+
+  @@map("categorias")
+}
+
+model ItemAdicional {
+  id      Int                      @id @default(autoincrement())
+  nome    String
+  descricao String?
+  preco   Float
+  itensAdicionais ItemDoPedidoItemAdicional[]
+
+  @@map("itens_adicionais")
+}
+
+model ItemDoPedidoItemAdicional {
+  itemDoPedidoId   Int
+  itemAdicionalId  Int
+  itemDoPedido     ItemDoPedido   @relation(fields: [itemDoPedidoId], references: [id])
+  itemAdicional    ItemAdicional  @relation(fields: [itemAdicionalId], references: [id])
+
+  @@id([itemDoPedidoId, itemAdicionalId])
+
+  @@map("item_do_pedido_has_item_adicional")
+}
+
+enum StatusMesa {
+  disponivel
+  ocupado
+}
+
+enum StatusPedido {
+  novo
+  preparo
+  pronto
+  entregue
+}
