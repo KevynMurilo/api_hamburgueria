@@ -29,6 +29,57 @@
 
 Esta documentação descreve os endpoints e modelos de dados para a API RESTful de uma hamburgueria. A API permite que garçons visualizem mesas disponíveis, registrem pedidos, adicionem itens adicionais aos produtos e enviem pedidos para uma dashboard que imprime os pedidos para a cozinha.
 
+## Instalação
+
+```bash
+yarn install
+```
+
+### Execução do Prisma
+
+```
+npx prisma migrate dev
+```
+
+> Execute esse comando para rodar as migrations
+
+### Execução
+
+Modo de Inicialização
+
+```bash
+yarn start
+```
+
+Modo de Observação
+
+```bash
+yarn start:dev
+```
+
+Modo de Produção
+
+```bash
+yarn start:prod
+```
+
+## Configuração do Ambiente
+
+Antes de iniciar a aplicação, é crucial configurar corretamente o arquivo `.env` na raiz do projeto. Certifique-se de adicionar as seguintes variáveis de ambiente:
+
+```plaintext
+DB_USER=
+DB_PASSWORD=
+DB_HOST=
+DB_PORT=
+DB_DATABASE_NAME=
+DB_SCHEMA=p
+PORT=
+SECRETKEY=
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE_NAME}?schema=${DB_SCHEMA}"
+```
+> Essas variáveis são essenciais para conectar e configurar seu banco de dados PostgreSQL, bem como definir configurações importantes para a aplicação.
+
 ## Endpoints
 
 ### Mesas
