@@ -17,6 +17,7 @@ describe('GarcomController', () => {
           useValue: {
             create: jest.fn(),
             findAll: jest.fn(),
+            delete: jest.fn(),
           },
         },
       ],
@@ -99,6 +100,28 @@ describe('GarcomController', () => {
         .mockRejectedValue(new NotFoundException('Nenhum garçon encontrado'));
 
       await expect(controller.findAll()).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a garcom if it exists', async () => {
+      const mockMessage = { message: `Garçom Garcom1 deletado com sucesso` };
+
+      jest.spyOn(service, 'delete').mockResolvedValue(mockMessage);
+
+      const result = await controller.delete(1);
+
+      expect(result).toEqual(mockMessage);
+      expect(service.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException if garcom does not exists', async () => {
+      jest
+        .spyOn(service, 'delete')
+        .mockRejectedValue(new NotFoundException('Nenhum garçom encontrado'));
+
+      await expect(controller.delete(1)).rejects.toThrow(NotFoundException);
+      expect(service.delete).toHaveBeenCalledWith(1);
     });
   });
 });

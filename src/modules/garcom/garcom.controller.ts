@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { GarcomService } from './garcom.service';
 import { CreateGarcomDto } from './dto/create-garcom.dto';
 
-@Controller('garcom')
+@Controller('garcons')
 export class GarcomController {
   constructor(private readonly garcomService: GarcomService) {}
 
@@ -14,5 +14,10 @@ export class GarcomController {
   @Get()
   async findAll() {
     return this.garcomService.findAll();
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    return this.garcomService.delete(+id);
   }
 }

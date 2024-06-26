@@ -19,9 +19,11 @@ describe('GarcomService', () => {
         {
           provide: GarcomRepository,
           useValue: {
-            findOne: jest.fn(),
+            findOneByEmail: jest.fn(),
+            findOneById: jest.fn(),
             create: jest.fn(),
             findAll: jest.fn(),
+            delete: jest.fn(),
           },
         },
       ],
@@ -44,7 +46,7 @@ describe('GarcomService', () => {
         senha: 'password123',
       };
 
-      jest.spyOn(repository, 'findOne').mockResolvedValue({
+      jest.spyOn(repository, 'findOneByEmail').mockResolvedValue({
         id: 1,
         email: 'test@example.com',
         nome: 'Test',
@@ -65,14 +67,16 @@ describe('GarcomService', () => {
       const hashedPassword = 'hashedPassword123';
       const garcom = { id: 1, ...createGarcomDto, senha: hashedPassword };
 
-      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
+      jest.spyOn(repository, 'findOneByEmail').mockResolvedValue(null);
       jest.spyOn(repository, 'create').mockResolvedValue(garcom);
       bcryptHashSpy.mockResolvedValue(hashedPassword);
 
       const result = await service.create(createGarcomDto);
 
       expect(result).toEqual(garcom);
-      expect(repository.findOne).toHaveBeenCalledWith(createGarcomDto.email);
+      expect(repository.findOneByEmail).toHaveBeenCalledWith(
+        createGarcomDto.email,
+      );
       expect(bcrypt.hash).toHaveBeenCalledWith(createGarcomDto.senha, 10);
       expect(repository.create).toHaveBeenCalledWith({
         ...createGarcomDto,
@@ -111,6 +115,36 @@ describe('GarcomService', () => {
 
       await expect(service.findAll()).rejects.toThrow(NotFoundException);
       expect(repository.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a garçom if it exists', async () => {
+      const mockGarcom = {
+        id: 1,
+        nome: 'Garcom1',
+        email: 'garcom1@example.com',
+        senha: 'hashedPassword1',
+      };
+
+      (repository.findOneById as jest.Mock).mockResolvedValue(mockGarcom);
+      (repository.delete as jest.Mock).mockResolvedValue(mockGarcom);
+
+      const result = await service.delete(1);
+
+      expect(result).toEqual({
+        message: `Garçom Garcom1 deletado com sucesso`,
+      });
+      expect(repository.findOneById).toHaveBeenCalledWith(1);
+      expect(repository.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException if garcom does not exists', async () => {
+      (repository.findOneById as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.delete(1)).rejects.toThrow(NotFoundException);
+      expect(repository.findOneById).toHaveBeenCalledWith(1);
+      expect(repository.delete).not.toHaveBeenCalled();
     });
   });
 });

@@ -3,6 +3,7 @@ import { MesaController } from './mesa.controller';
 import { MesaService } from './mesa.service';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { StatusMesa } from '@prisma/client';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('MesaController', () => {
   let controller: MesaController;
@@ -17,6 +18,8 @@ describe('MesaController', () => {
           useValue: {
             create: jest.fn(),
             findAll: jest.fn(),
+            findOne: jest.fn(),
+            delete: jest.fn(),
           },
         },
       ],
@@ -49,6 +52,21 @@ describe('MesaController', () => {
       expect(result).toEqual(mockCreateMesa);
       expect(service.create).toHaveBeenCalledWith(createMesaDto);
     });
+
+    it('should throw ConflictException if mesa already exists', async () => {
+      const createMesaDto: CreateMesaDto = {
+        numero: 1,
+        status: 'disponivel',
+      };
+
+      jest
+        .spyOn(service, 'create')
+        .mockRejectedValue(new ConflictException('Mesa já registrada'));
+
+      await expect(controller.create(createMesaDto)).rejects.toThrow(
+        ConflictException,
+      );
+    });
   });
 
   describe('findAll', () => {
@@ -66,12 +84,67 @@ describe('MesaController', () => {
         },
       ];
 
-      (service.findAll as jest.Mock).mockResolvedValue(mesas);
+      jest.spyOn(service, 'findAll').mockResolvedValue(mesas);
 
       const result = await controller.findAll();
 
       expect(result).toEqual(mesas);
       expect(service.findAll).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException if no mesas are found', async () => {
+      jest
+        .spyOn(service, 'findAll')
+        .mockRejectedValue(new NotFoundException('Nenhuma mesa cadastrada'));
+
+      await expect(controller.findAll()).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a mesa if it exists', async () => {
+      const mockMesa = {
+        id: 1,
+        numero: 1,
+        status: StatusMesa.disponivel,
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockMesa);
+
+      const result = await controller.findOne(1);
+
+      expect(result).toEqual(mockMesa);
+      expect(service.findOne).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException if mesa does not exist', async () => {
+      jest
+        .spyOn(service, 'findOne')
+        .mockRejectedValue(new NotFoundException('Mesa não encontrada'));
+
+      await expect(controller.findOne(1)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a mesa if it exists', async () => {
+      const mockMessage = { message: `Mesa 1 deletada com sucesso` };
+
+      jest.spyOn(service, 'delete').mockResolvedValue(mockMessage);
+
+      const result = await controller.delete(1);
+
+      expect(result).toEqual(mockMessage);
+      expect(service.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException if mesa does not exist', async () => {
+      jest
+        .spyOn(service, 'delete')
+        .mockRejectedValue(new NotFoundException('Mesa não encontrada'));
+
+      await expect(controller.delete(1)).rejects.toThrow(NotFoundException);
+      expect(service.delete).toHaveBeenCalledWith(1);
     });
   });
 });

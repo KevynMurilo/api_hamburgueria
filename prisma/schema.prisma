@@ -9,7 +9,7 @@ datasource db {
 
 model Mesa {
   id      Int      @id @default(autoincrement())
-  numero  Int
+  numero  Int      @unique
   status  StatusMesa @default(disponivel)
   pedidos Pedido[]
 
