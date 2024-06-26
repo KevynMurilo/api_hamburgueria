@@ -16,9 +16,21 @@ export class GarcomRepository {
     return await this.prisma.garcom.findMany();
   }
 
-  async findOne(email: string): Promise<Garcom> {
+  async findOneByEmail(email: string): Promise<Garcom> {
     return await this.prisma.garcom.findUnique({
       where: { email },
+    });
+  }
+
+  async findOneById(id: number): Promise<Garcom> {
+    return await this.prisma.garcom.findUnique({
+      where: { id },
+    });
+  }
+
+  async delete(id: number): Promise<Garcom> {
+    return await this.prisma.garcom.delete({
+      where: { id },
     });
   }
 }
