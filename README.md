@@ -7,7 +7,7 @@
 # Documentação da API da Hamburgueria (Em desenvolvimento)
 
 ## Modelagem
-![modelagem](https://github.com/KevynMurilo/api_baby/assets/132490286/eb67711e-3ac8-4615-b204-368468355582)
+![modelagem](https://github.com/KevynMurilo/api_hamburgueria/assets/132490286/e8fe6918-b6e7-409b-99b6-efff44f978fa)
 
 ## Sumário
 
