@@ -11,7 +11,7 @@ export class AuthService {
   ) {}
 
   async signIn(email: string, senha: string): Promise<{ token: string }> {
-    const garcom = await this.garcomService.findOne(email);
+    const garcom = await this.garcomService.findOneByEmail(email);
     if (!garcom) {
       throw new UnauthorizedException('Credenciais inválidas');
     }

@@ -118,6 +118,64 @@ describe('GarcomService', () => {
     });
   });
 
+  describe('findOneByEmail', () => {
+    it('should return garcom if found by email', async () => {
+      const email = 'test@example.com';
+      const garcom = {
+        id: 1,
+        nome: 'Test',
+        email: email,
+        senha: 'hashedPassword123',
+      };
+
+      jest.spyOn(repository, 'findOneByEmail').mockResolvedValue(garcom);
+
+      const result = await service.findOneByEmail(email);
+
+      expect(result).toEqual(garcom);
+      expect(repository.findOneByEmail).toHaveBeenCalledWith(email);
+    });
+
+    it('should throw NotFoundException if garcom is not found by email', async () => {
+      const email = 'nonexistent@example.com';
+
+      jest.spyOn(repository, 'findOneByEmail').mockResolvedValue(null);
+
+      await expect(service.findOneByEmail(email)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(repository.findOneByEmail).toHaveBeenCalledWith(email);
+    });
+  });
+
+  describe('findOneById', () => {
+    it('should return garcom if found by id', async () => {
+      const id = 1;
+      const garcom = {
+        id: id,
+        nome: 'Test',
+        email: 'test@example.com',
+        senha: 'hashedPassword123',
+      };
+
+      jest.spyOn(repository, 'findOneById').mockResolvedValue(garcom);
+
+      const result = await service.findOneById(id);
+
+      expect(result).toEqual(garcom);
+      expect(repository.findOneById).toHaveBeenCalledWith(id);
+    });
+
+    it('should throw NotFoundException if garcom is not found by id', async () => {
+      const id = 999;
+
+      jest.spyOn(repository, 'findOneById').mockResolvedValue(null);
+
+      await expect(service.findOneById(id)).rejects.toThrow(NotFoundException);
+      expect(repository.findOneById).toHaveBeenCalledWith(id);
+    });
+  });
+
   describe('delete', () => {
     it('should delete a garçom if it exists', async () => {
       const mockGarcom = {

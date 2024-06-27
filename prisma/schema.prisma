@@ -28,11 +28,11 @@ model Garcom {
 
 model Pedido {
   id        Int           @id @default(autoincrement())
-  id_mesa    Int
+  numero_mesa    Int
   id_garcom  Int
-  hora_pedido DateTime
+  hora_pedido DateTime    @default(now())
   status    StatusPedido
-  mesa      Mesa          @relation(fields: [id_mesa], references: [id])
+  mesa      Mesa          @relation(fields: [numero_mesa], references: [numero])
   garcom    Garcom        @relation(fields: [id_garcom], references: [id])
   itens     ItemDoPedido[]
 
@@ -43,7 +43,7 @@ model ItemDoPedido {
   id             Int              @id @default(autoincrement())
   id_pedido       Int
   id_produto      Int
-  quantidade     Int
+  quantidade     Int              @default(1)
   observacoes    String?
   pedido         Pedido           @relation(fields: [id_pedido], references: [id])
   produto        Produto          @relation(fields: [id_produto], references: [id])

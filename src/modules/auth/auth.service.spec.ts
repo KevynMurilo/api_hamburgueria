@@ -17,7 +17,7 @@ describe('AuthService', () => {
         {
           provide: GarcomService,
           useValue: {
-            findOne: jest.fn(),
+            findOneByEmail: jest.fn(),
           },
         },
         {
@@ -48,12 +48,14 @@ describe('AuthService', () => {
       };
 
       const mockToken = 'mocked.jwt.token';
-      garcomService.findOne = jest.fn().mockResolvedValue(mockGarcom);
+      garcomService.findOneByEmail = jest.fn().mockResolvedValue(mockGarcom);
       jwtService.sign = jest.fn().mockReturnValue(mockToken);
 
       const result = await service.signIn('joao@example.com', 'senha123');
       expect(result.token).toEqual(mockToken);
-      expect(garcomService.findOne).toHaveBeenCalledWith('joao@example.com');
+      expect(garcomService.findOneByEmail).toHaveBeenCalledWith(
+        'joao@example.com',
+      );
       expect(jwtService.sign).toHaveBeenCalledWith({
         id: mockGarcom.id,
         nome: mockGarcom.nome,
@@ -62,7 +64,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when email is not found', async () => {
-      garcomService.findOne = jest.fn().mockResolvedValue(null);
+      garcomService.findOneByEmail = jest.fn().mockResolvedValue(null);
       await expect(
         service.signIn('inexistente@example.com', 'senha123'),
       ).rejects.toThrow(UnauthorizedException);
@@ -76,7 +78,7 @@ describe('AuthService', () => {
         senha: await bcrypt.hash('senha123', 10),
       };
 
-      garcomService.findOne = jest.fn().mockResolvedValue(mockGarcom);
+      garcomService.findOneByEmail = jest.fn().mockResolvedValue(mockGarcom);
       await expect(
         service.signIn('joao@example.com', 'senha_errada'),
       ).rejects.toThrow(UnauthorizedException);
