@@ -37,10 +37,19 @@ export class GarcomService {
     return garcons;
   }
 
-  async findOne(email: string) {
+  async findOneByEmail(email: string) {
     const garcom = await this.garcomRepository.findOneByEmail(email);
     if (!garcom) {
-      throw new NotFoundException('Nenhum garçom encontrado');
+      throw new NotFoundException('Garçom não encontrado');
+    }
+
+    return garcom;
+  }
+
+  async findOneById(id: number) {
+    const garcom = await this.garcomRepository.findOneById(id);
+    if (!garcom) {
+      throw new NotFoundException('Garçom não encontrado');
     }
 
     return garcom;
@@ -49,7 +58,7 @@ export class GarcomService {
   async delete(id: number) {
     const garcom = await this.garcomRepository.findOneById(id);
     if (!garcom) {
-      throw new NotFoundException('Nenhum garçom encontrado');
+      throw new NotFoundException('Garçom não encontrado');
     }
 
     await this.garcomRepository.delete(id);

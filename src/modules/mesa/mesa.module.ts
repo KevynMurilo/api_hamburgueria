@@ -7,5 +7,6 @@ import { MesaController } from './mesa.controller';
 @Module({
   providers: [MesaService, MesaRepository, PrismaService],
   controllers: [MesaController],
+  exports: [MesaService],
 })
 export class MesaModule {}
