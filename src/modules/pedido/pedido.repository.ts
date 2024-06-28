@@ -20,12 +20,99 @@ export class PedidoRepository {
   }
 
   async findAll(): Promise<Pedido[]> {
-    return await this.prisma.pedido.findMany();
+    return await this.prisma.pedido.findMany({
+      select: {
+        id: true,
+        numero_mesa: true,
+        id_garcom: true,
+        garcom: {
+          select: {
+            nome: true,
+          },
+        },
+        hora_pedido: true,
+        status: true,
+        itens: {
+          select: {
+            produto: {
+              select: {
+                nome: true,
+                descricao: true,
+                preco: true,
+                produtoCategoria: {
+                  select: {
+                    categoria: {
+                      select: {
+                        nome: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            itensAdicionais: {
+              select: {
+                itemAdicional: {
+                  select: {
+                    nome: true,
+                    descricao: true,
+                    preco: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async findOne(id: number): Promise<Pedido> {
     return await this.prisma.pedido.findUnique({
       where: { id },
+      select: {
+        id: true,
+        numero_mesa: true,
+        id_garcom: true,
+        garcom: {
+          select: {
+            nome: true,
+          },
+        },
+        hora_pedido: true,
+        status: true,
+        itens: {
+          select: {
+            produto: {
+              select: {
+                nome: true,
+                descricao: true,
+                preco: true,
+                produtoCategoria: {
+                  select: {
+                    categoria: {
+                      select: {
+                        nome: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            itensAdicionais: {
+              select: {
+                itemAdicional: {
+                  select: {
+                    nome: true,
+                    descricao: true,
+                    preco: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 

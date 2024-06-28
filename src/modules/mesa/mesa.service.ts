@@ -36,19 +36,13 @@ export class MesaService {
   }
 
   async update(numero: number, updateMesaDto: UpdateMesaDto) {
-    const mesa = await this.mesaRepository.findOne(numero);
-    if (!mesa) {
-      throw new NotFoundException('Mesa não encontrada');
-    }
+    await this.findOne(numero);
 
     return await this.mesaRepository.update(numero, updateMesaDto);
   }
 
   async delete(numero: number) {
-    const mesa = await this.mesaRepository.findOne(numero);
-    if (!mesa) {
-      throw new NotFoundException('Mesa não encontrada');
-    }
+    await this.findOne(numero);
 
     await this.mesaRepository.delete(numero);
     return { message: `Mesa ${numero} deletada com sucesso` };

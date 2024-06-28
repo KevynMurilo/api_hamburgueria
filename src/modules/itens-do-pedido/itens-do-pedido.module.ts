@@ -10,5 +10,6 @@ import { PrismaService } from '../database/prisma.service';
   imports: [PedidoModule, ProdutoModule],
   controllers: [ItensDoPedidoController],
   providers: [ItensDoPedidoService, ItensDoPedidoRepository, PrismaService],
+  exports: [ItensDoPedidoService],
 })
 export class ItensDoPedidoModule {}
