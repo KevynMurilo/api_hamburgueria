@@ -8,8 +8,8 @@ datasource db {
 }
 
 model Mesa {
-  id      Int      @id @default(autoincrement())
-  numero  Int      @unique
+  id      Int        @id @default(autoincrement())
+  numero  Int        @unique
   status  StatusMesa @default(disponivel)
   pedidos Pedido[]
 
@@ -17,87 +17,86 @@ model Mesa {
 }
 
 model Garcom {
-  id     Int      @id @default(autoincrement())
-  nome   String
-  email  String   @unique
-  senha  String
+  id      Int      @id @default(autoincrement())
+  nome    String
+  email   String   @unique
+  senha   String
   pedidos Pedido[]
 
   @@map("garcons")
 }
 
 model Pedido {
-  id        Int           @id @default(autoincrement())
-  numero_mesa    Int
-  id_garcom  Int
-  hora_pedido DateTime    @default(now())
-  status    StatusPedido
-  mesa      Mesa          @relation(fields: [numero_mesa], references: [numero])
-  garcom    Garcom        @relation(fields: [id_garcom], references: [id])
-  itens     ItemDoPedido[]
+  id          Int            @id @default(autoincrement())
+  numero_mesa Int
+  id_garcom   Int
+  hora_pedido DateTime       @default(now())
+  status      StatusPedido
+  mesa        Mesa           @relation(fields: [numero_mesa], references: [numero])
+  garcom      Garcom         @relation(fields: [id_garcom], references: [id])
+  itens       ItemDoPedido[]
 
   @@map("pedidos")
 }
 
 model ItemDoPedido {
-  id             Int              @id @default(autoincrement())
+  id              Int                         @id @default(autoincrement())
   id_pedido       Int
   id_produto      Int
-  quantidade     Int              @default(1)
-  observacoes    String?
-  pedido         Pedido           @relation(fields: [id_pedido], references: [id])
-  produto        Produto          @relation(fields: [id_produto], references: [id])
+  quantidade      Int                         @default(1)
+  observacoes     String?
+  pedido          Pedido                      @relation(fields: [id_pedido], references: [id])
+  produto         Produto                     @relation(fields: [id_produto], references: [id])
   itensAdicionais ItemDoPedidoItemAdicional[]
 
   @@map("itens_do_pedidos")
 }
 
 model Produto {
-  id          Int             @id @default(autoincrement())
-  nome        String
-  descricao   String?
-  preco       Float
-  itens       ItemDoPedido[]
-  produtoCategoria  ProdutoCategoria[]
+  id               Int                @id @default(autoincrement())
+  nome             String
+  descricao        String?
+  preco            Float
+  itens            ItemDoPedido[]
+  produtoCategoria ProdutoCategoria[]
 
   @@map("protudos")
 }
 
 model Categoria {
-  id      Int       @id @default(autoincrement())
-  nome    String    @unique
+  id               Int                @id @default(autoincrement())
+  nome             String             @unique
   produtoCategoria ProdutoCategoria[]
 
   @@map("categorias")
 }
 
 model ProdutoCategoria {
-  id_produto Int
+  id_produto   Int
   id_categoria Int
-  produto Produto @relation(fields: [id_produto], references: [id])
-  categoria Categoria @relation(fields: [id_categoria], references: [id])
+  produto      Produto   @relation(fields: [id_produto], references: [id])
+  categoria    Categoria @relation(fields: [id_categoria], references: [id])
 
   @@id([id_produto, id_categoria])
 }
 
 model ItemAdicional {
-  id      Int                      @id @default(autoincrement())
-  nome    String
-  descricao String?
-  preco   Float
+  id              Int                         @id @default(autoincrement())
+  nome            String
+  descricao       String?
+  preco           Float
   itensAdicionais ItemDoPedidoItemAdicional[]
 
   @@map("itens_adicionais")
 }
 
 model ItemDoPedidoItemAdicional {
-  itemDoPedidoId   Int
-  itemAdicionalId  Int
-  itemDoPedido     ItemDoPedido   @relation(fields: [itemDoPedidoId], references: [id])
-  itemAdicional    ItemAdicional  @relation(fields: [itemAdicionalId], references: [id])
+  id_item_do_pedido Int
+  id_item_adicional Int
+  itemDoPedido      ItemDoPedido  @relation(fields: [id_item_do_pedido], references: [id])
+  itemAdicional     ItemAdicional @relation(fields: [id_item_adicional], references: [id])
 
-  @@id([itemDoPedidoId, itemAdicionalId])
-
+  @@id([id_item_do_pedido, id_item_adicional])
   @@map("item_do_pedido_has_item_adicional")
 }
 

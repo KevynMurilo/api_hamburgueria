@@ -86,8 +86,8 @@ describe('PedidoService', () => {
   describe('findAll', () => {
     it('should return an array of pedidos', async () => {
       const pedidos = [
-        { id: 1, status: 'EM_PREPARO', numero_mesa: 1, id_garcom: 1 },
-        { id: 2, status: 'EM_PREPARO', numero_mesa: 2, id_garcom: 2 },
+        { id: 1, status: 'preparo', numero_mesa: 1, id_garcom: 1 },
+        { id: 2, status: 'preparo', numero_mesa: 2, id_garcom: 2 },
       ];
 
       jest.spyOn(pedidoRepository, 'findAll').mockResolvedValue(pedidos as any);
@@ -109,7 +109,7 @@ describe('PedidoService', () => {
   describe('findOne', () => {
     it('should return the pedido if found', async () => {
       const id = 1;
-      const pedido = { id, status: 'EM_PREPARO', numero_mesa: 1, id_garcom: 1 };
+      const pedido = { id, status: 'preparo', numero_mesa: 1, id_garcom: 1 };
 
       jest.spyOn(pedidoRepository, 'findOne').mockResolvedValue(pedido as any);
 
