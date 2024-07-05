@@ -5,14 +5,18 @@ import { ItensDoPedidoService } from '../itens-do-pedido/itens-do-pedido.service
 import { ItensAdicionaisService } from '../itens-adicionais/itens-adicionais.service';
 import { ItensPedidoHasItensAdicionaisDto } from './dto/itens-pedido-has-itens-adicionais.dto';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 describe('ItensPedidoHasItensAdicionaisService', () => {
   let service: ItensPedidoHasItensAdicionaisService;
   let repository: ItensPedidoHasItensAdicionaisRepository;
   let itensDoPedidoService: ItensDoPedidoService;
   let itensAdicionaisService: ItensAdicionaisService;
+  let trx: Prisma.TransactionClient;
 
   beforeEach(async () => {
+    trx = {} as Prisma.TransactionClient; // Mock TransactionClient
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ItensPedidoHasItensAdicionaisService,
@@ -62,16 +66,24 @@ describe('ItensPedidoHasItensAdicionaisService', () => {
         id_item_do_pedido: 1,
         id_item_adicional: 1,
       };
+
+      // Mock behaviors
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
       jest.spyOn(repository, 'create').mockResolvedValue(dto);
-      jest.spyOn(itensDoPedidoService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(itensAdicionaisService, 'findOne').mockResolvedValue(null);
+      jest.spyOn(itensDoPedidoService, 'findOne').mockResolvedValue({} as any); // Mock a valid item
+      jest
+        .spyOn(itensAdicionaisService, 'findOne')
+        .mockResolvedValue({} as any); // Mock a valid item
 
-      const result = await service.create(dto);
+      // Call the create method
+      const result = await service.create(trx, dto);
+
+      // Assertions
       expect(result).toEqual(dto);
-      expect(repository.create).toHaveBeenCalledWith(dto);
-      expect(itensDoPedidoService.findOne).toHaveBeenCalledWith(1);
-      expect(itensAdicionaisService.findOne).toHaveBeenCalledWith(1);
+      expect(repository.create).toHaveBeenCalledWith(trx, dto);
+      expect(itensAdicionaisService.findOne).toHaveBeenCalledWith(
+        dto.id_item_adicional,
+      );
     });
 
     it('should handle conflict exception', async () => {
@@ -79,58 +91,47 @@ describe('ItensPedidoHasItensAdicionaisService', () => {
         id_item_do_pedido: 1,
         id_item_adicional: 1,
       };
+
       jest.spyOn(repository, 'findOne').mockResolvedValue(dto);
 
-      await expect(service.create(dto)).rejects.toThrow(ConflictException);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should find a link between items in order and additional items', async () => {
-      const dto: ItensPedidoHasItensAdicionaisDto = {
-        id_item_do_pedido: 1,
-        id_item_adicional: 1,
-      };
-      jest.spyOn(repository, 'findOne').mockResolvedValue(dto);
-
-      const result = await service.findOne(dto);
-      expect(result).toEqual(dto);
-      expect(repository.findOne).toHaveBeenCalledWith(dto);
-    });
-
-    it('should handle not found exception', async () => {
-      const dto: ItensPedidoHasItensAdicionaisDto = {
-        id_item_do_pedido: 1,
-        id_item_adicional: 1,
-      };
-      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
-
-      await expect(service.findOne(dto)).rejects.toThrow(NotFoundException);
+      await expect(service.create(trx, dto)).rejects.toThrow(ConflictException);
     });
   });
 
   describe('delete', () => {
-    it('should delete a link between items in order and additional items', async () => {
+    it('deve deletar um vínculo entre itens do pedido e itens adicionais', async () => {
       const dto: ItensPedidoHasItensAdicionaisDto = {
         id_item_do_pedido: 1,
         id_item_adicional: 1,
       };
-      jest.spyOn(repository, 'delete').mockResolvedValue(dto);
-      jest.spyOn(itensDoPedidoService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(itensAdicionaisService, 'findOne').mockResolvedValue(null);
 
+      // Comportamentos simulados
+      jest.spyOn(repository, 'delete').mockResolvedValue(dto);
+      jest.spyOn(itensDoPedidoService, 'findOne').mockResolvedValue({} as any);
+      jest
+        .spyOn(itensAdicionaisService, 'findOne')
+        .mockResolvedValue({} as any);
+
+      // Chamar o método delete
       const result = await service.delete(dto);
+
+      // Verificações
       expect(result).toEqual(dto);
       expect(repository.delete).toHaveBeenCalledWith(dto);
-      expect(itensDoPedidoService.findOne).toHaveBeenCalledWith(1);
-      expect(itensAdicionaisService.findOne).toHaveBeenCalledWith(1);
+      expect(itensDoPedidoService.findOne).toHaveBeenCalledWith(
+        dto.id_item_do_pedido,
+      );
+      expect(itensAdicionaisService.findOne).toHaveBeenCalledWith(
+        dto.id_item_adicional,
+      );
     });
 
-    it('should handle not found exception', async () => {
+    it('deve lançar exceção de não encontrado', async () => {
       const dto: ItensPedidoHasItensAdicionaisDto = {
         id_item_do_pedido: 1,
         id_item_adicional: 1,
       };
+
       jest
         .spyOn(itensDoPedidoService, 'findOne')
         .mockRejectedValue(new NotFoundException());

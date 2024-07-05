@@ -25,6 +25,11 @@ export class ProdutoController {
     return await this.produtoService.findAll();
   }
 
+  @Get('/categoria/:id_categoria')
+  async findByCategory(@Param('id_categoria') id_categoria: string) {
+    return await this.produtoService.findByCategory(+id_categoria);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.produtoService.findOne(+id);

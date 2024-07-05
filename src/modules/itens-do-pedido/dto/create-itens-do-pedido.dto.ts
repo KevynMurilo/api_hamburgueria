@@ -1,4 +1,11 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { ItensPedidoHasItensAdicionaisDto } from 'src/modules/itens-pedido-has-itens-adicionais/dto/itens-pedido-has-itens-adicionais.dto';
 
 export class CreateItensDoPedidoDto {
   @IsInt()
@@ -16,4 +23,8 @@ export class CreateItensDoPedidoDto {
   @IsString()
   @IsOptional()
   observacoes: string;
+
+  @IsArray()
+  @IsOptional()
+  adicionais?: ItensPedidoHasItensAdicionaisDto[];
 }

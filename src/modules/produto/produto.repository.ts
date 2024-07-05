@@ -17,6 +17,20 @@ export class ProdutoRepository {
     return await this.prisma.produto.findMany();
   }
 
+  async findByCategory(id_categoria: number): Promise<Produto[]> {
+    return await this.prisma.produto.findMany({
+      where: {
+        produtoCategoria: {
+          some: {
+            categoria: {
+              id: id_categoria,
+            },
+          },
+        },
+      },
+    });
+  }
+
   async findOne(id: number): Promise<Produto> {
     return await this.prisma.produto.findUnique({
       where: { id },

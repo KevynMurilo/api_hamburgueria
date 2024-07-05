@@ -85,7 +85,7 @@ describe('MesaService', () => {
         {
           id: 2,
           numero: 2,
-          status: StatusMesa.ocupado,
+          status: StatusMesa.ocupada,
         },
       ];
 
@@ -129,7 +129,7 @@ describe('MesaService', () => {
     it('should update mesa status', async () => {
       const numero = 1;
       const updateMesaDto: UpdateMesaDto = {
-        status: StatusMesa.ocupado,
+        status: StatusMesa.ocupada,
       };
 
       const mockExistingMesa = {
@@ -141,7 +141,7 @@ describe('MesaService', () => {
       const updatedMesa = {
         id: 1,
         numero: 1,
-        status: StatusMesa.ocupado,
+        status: StatusMesa.ocupada,
       };
 
       (repository.findOne as jest.Mock).mockResolvedValue(mockExistingMesa);
@@ -157,7 +157,7 @@ describe('MesaService', () => {
     it('should throw NotFoundException if mesa does not exist', async () => {
       const numero = 1;
       const updateMesaDto: UpdateMesaDto = {
-        status: StatusMesa.ocupado,
+        status: StatusMesa.ocupada,
       };
 
       (repository.findOne as jest.Mock).mockResolvedValue(null);

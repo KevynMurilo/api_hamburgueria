@@ -7,8 +7,11 @@ import { CreateItensDoPedidoDto } from './dto/create-itens-do-pedido.dto';
 export class ItensDoPedidoRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateItensDoPedidoDto): Promise<ItemDoPedido> {
-    return await this.prisma.itemDoPedido.create({
+  async create(
+    trx: Prisma.TransactionClient,
+    data: CreateItensDoPedidoDto,
+  ): Promise<ItemDoPedido> {
+    return await trx.itemDoPedido.create({
       data: {
         pedido: { connect: { id: data.id_pedido } },
         produto: { connect: { id: data.id_produto } },

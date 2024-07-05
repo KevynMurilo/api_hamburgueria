@@ -31,7 +31,8 @@ model Pedido {
   numero_mesa Int
   id_garcom   Int
   hora_pedido DateTime       @default(now())
-  status      StatusPedido
+  status      StatusPedido   @default(pendente)
+  metodo_pagamento StatusMetodoPagamento @default(pix)
   mesa        Mesa           @relation(fields: [numero_mesa], references: [numero])
   garcom      Garcom         @relation(fields: [id_garcom], references: [id])
   itens       ItemDoPedido[]
@@ -102,12 +103,17 @@ model ItemDoPedidoItemAdicional {
 
 enum StatusMesa {
   disponivel
-  ocupado
+  ocupada
 }
 
 enum StatusPedido {
-  novo
-  preparo
-  pronto
-  entregue
+  pendente
+  finalizado
+}
+
+enum StatusMetodoPagamento {
+  pix
+  debito
+  credito
+  dinheiro
 }

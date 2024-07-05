@@ -19,6 +19,16 @@ export class ProdutoService {
     return produtos;
   }
 
+  async findByCategory(id_categoria: number) {
+    const produtos = await this.produtoRepository.findByCategory(id_categoria);
+    if (produtos.length === 0) {
+      throw new NotFoundException(
+        'Nenhum produto encontrado para esta categoria',
+      );
+    }
+    return produtos;
+  }
+
   async findOne(id: number) {
     const produto = await this.produtoRepository.findOne(id);
     if (!produto) throw new NotFoundException('Produto não encontrado');

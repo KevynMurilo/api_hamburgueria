@@ -1,8 +1,11 @@
 -- CreateEnum
-CREATE TYPE "StatusMesa" AS ENUM ('disponivel', 'ocupado');
+CREATE TYPE "StatusMesa" AS ENUM ('disponivel', 'ocupada');
 
 -- CreateEnum
-CREATE TYPE "StatusPedido" AS ENUM ('novo', 'preparo', 'pronto', 'entregue');
+CREATE TYPE "StatusPedido" AS ENUM ('pendente', 'finalizado');
+
+-- CreateEnum
+CREATE TYPE "StatusMetodoPagamento" AS ENUM ('pix', 'debito', 'credito', 'dinheiro');
 
 -- CreateTable
 CREATE TABLE "mesas" (
@@ -30,6 +33,7 @@ CREATE TABLE "pedidos" (
     "id_garcom" INTEGER NOT NULL,
     "hora_pedido" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" "StatusPedido" NOT NULL,
+    "metodo_pagamento" "StatusMetodoPagamento" NOT NULL,
 
     CONSTRAINT "pedidos_pkey" PRIMARY KEY ("id")
 );
@@ -39,7 +43,7 @@ CREATE TABLE "itens_do_pedidos" (
     "id" SERIAL NOT NULL,
     "id_pedido" INTEGER NOT NULL,
     "id_produto" INTEGER NOT NULL,
-    "quantidade" INTEGER NOT NULL,
+    "quantidade" INTEGER NOT NULL DEFAULT 1,
     "observacoes" TEXT,
 
     CONSTRAINT "itens_do_pedidos_pkey" PRIMARY KEY ("id")
@@ -83,10 +87,10 @@ CREATE TABLE "itens_adicionais" (
 
 -- CreateTable
 CREATE TABLE "item_do_pedido_has_item_adicional" (
-    "itemDoPedidoId" INTEGER NOT NULL,
-    "itemAdicionalId" INTEGER NOT NULL,
+    "id_item_do_pedido" INTEGER NOT NULL,
+    "id_item_adicional" INTEGER NOT NULL,
 
-    CONSTRAINT "item_do_pedido_has_item_adicional_pkey" PRIMARY KEY ("itemDoPedidoId","itemAdicionalId")
+    CONSTRAINT "item_do_pedido_has_item_adicional_pkey" PRIMARY KEY ("id_item_do_pedido","id_item_adicional")
 );
 
 -- CreateIndex
@@ -117,7 +121,7 @@ ALTER TABLE "ProdutoCategoria" ADD CONSTRAINT "ProdutoCategoria_id_produto_fkey"
 ALTER TABLE "ProdutoCategoria" ADD CONSTRAINT "ProdutoCategoria_id_categoria_fkey" FOREIGN KEY ("id_categoria") REFERENCES "categorias"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "item_do_pedido_has_item_adicional" ADD CONSTRAINT "item_do_pedido_has_item_adicional_itemDoPedidoId_fkey" FOREIGN KEY ("itemDoPedidoId") REFERENCES "itens_do_pedidos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "item_do_pedido_has_item_adicional" ADD CONSTRAINT "item_do_pedido_has_item_adicional_id_item_do_pedido_fkey" FOREIGN KEY ("id_item_do_pedido") REFERENCES "itens_do_pedidos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "item_do_pedido_has_item_adicional" ADD CONSTRAINT "item_do_pedido_has_item_adicional_itemAdicionalId_fkey" FOREIGN KEY ("itemAdicionalId") REFERENCES "itens_adicionais"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "item_do_pedido_has_item_adicional" ADD CONSTRAINT "item_do_pedido_has_item_adicional_id_item_adicional_fkey" FOREIGN KEY ("id_item_adicional") REFERENCES "itens_adicionais"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
