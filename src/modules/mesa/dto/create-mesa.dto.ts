@@ -7,7 +7,7 @@ export class CreateMesaDto {
   numero: number;
 
   @IsEnum(StatusMesa, {
-    message: 'Status inválido. Os valores permitidos são: disponivel, ocupado',
+    message: 'Status inválido. Os valores permitidos são: disponivel, ocupada',
   })
   status: StatusMesa;
 }

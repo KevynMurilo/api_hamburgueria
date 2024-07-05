@@ -80,7 +80,7 @@ describe('MesaController', () => {
         {
           id: 2,
           numero: 2,
-          status: StatusMesa.ocupado,
+          status: StatusMesa.ocupada,
         },
       ];
 

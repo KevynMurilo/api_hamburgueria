@@ -3,21 +3,25 @@ import { CreateItensDoPedidoDto } from './dto/create-itens-do-pedido.dto';
 import { UpdateItensDoPedidoDto } from './dto/update-itens-do-pedido.dto';
 import { ItensDoPedidoRepository } from './itens-do-pedido.repository';
 import { ProdutoService } from '../produto/produto.service';
-import { PedidoService } from '../pedido/pedido.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ItensDoPedidoService {
   constructor(
     private readonly itensDoPedidoRepository: ItensDoPedidoRepository,
-    private readonly pedidoService: PedidoService,
     private readonly produtoService: ProdutoService,
   ) {}
 
-  async create(createItensDoPedidoDto: CreateItensDoPedidoDto) {
-    await this.pedidoService.findOne(createItensDoPedidoDto.id_pedido);
+  async create(
+    trx: Prisma.TransactionClient,
+    createItensDoPedidoDto: CreateItensDoPedidoDto,
+  ) {
     await this.produtoService.findOne(createItensDoPedidoDto.id_produto);
 
-    return await this.itensDoPedidoRepository.create(createItensDoPedidoDto);
+    return await this.itensDoPedidoRepository.create(
+      trx,
+      createItensDoPedidoDto,
+    );
   }
 
   async findAll() {
@@ -38,7 +42,6 @@ export class ItensDoPedidoService {
 
   async update(id: number, updateItensDoPedidoDto: UpdateItensDoPedidoDto) {
     await this.findOne(id);
-    await this.pedidoService.findOne(updateItensDoPedidoDto.id_pedido);
     await this.produtoService.findOne(updateItensDoPedidoDto.id_produto);
 
     return await this.itensDoPedidoRepository.update(

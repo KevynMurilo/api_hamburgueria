@@ -30,7 +30,7 @@ export class MesaController {
     return await this.mesaService.findOne(+numero);
   }
 
-  @Patch('status/:id')
+  @Patch('update-status/:id')
   async update(@Param('id') numero: number, @Body() status: UpdateMesaDto) {
     return await this.mesaService.update(+numero, status);
   }

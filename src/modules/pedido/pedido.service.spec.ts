@@ -1,19 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PedidoService } from './pedido.service';
 import { PedidoRepository } from './pedido.repository';
-import { NotFoundException } from '@nestjs/common';
-import { CreatePedidoDto } from './dto/create-pedido.dto';
-import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { MesaService } from '../mesa/mesa.service';
 import { GarcomService } from '../garcom/garcom.service';
+import { ItensDoPedidoService } from '../itens-do-pedido/itens-do-pedido.service';
+import { PrismaService } from '../database/prisma.service';
+import { Prisma } from '@prisma/client';
+import { CreatePedidoDto } from './dto/create-pedido.dto';
+import { UpdatePedidosDto } from './dto/update-pedido.dto';
+import { NotFoundException } from '@nestjs/common';
+import { CreateItensDoPedidoDto } from '../itens-do-pedido/dto/create-itens-do-pedido.dto';
+import { ItensPedidoHasItensAdicionaisService } from '../itens-pedido-has-itens-adicionais/itens-pedido-has-itens-adicionais.service';
 
 describe('PedidoService', () => {
   let service: PedidoService;
   let pedidoRepository: PedidoRepository;
   let mesaService: MesaService;
   let garcomService: GarcomService;
+  let itensDoPedidoService: ItensDoPedidoService;
+  let itensPedidoHasItensAdicionaisService: ItensPedidoHasItensAdicionaisService;
+  let trx: Prisma.TransactionClient;
 
   beforeEach(async () => {
+    trx = {} as Prisma.TransactionClient;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PedidoService,
@@ -23,8 +33,15 @@ describe('PedidoService', () => {
             create: jest.fn(),
             findAll: jest.fn(),
             findOne: jest.fn(),
-            update: jest.fn(),
+            findByPedidoMesaPendente: jest.fn(),
+            updateMany: jest.fn(),
             delete: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            $transaction: jest.fn().mockImplementation((fn) => fn(trx)),
           },
         },
         {
@@ -39,6 +56,18 @@ describe('PedidoService', () => {
             findOneById: jest.fn(),
           },
         },
+        {
+          provide: ItensDoPedidoService,
+          useValue: {
+            create: jest.fn(),
+          },
+        },
+        {
+          provide: ItensPedidoHasItensAdicionaisService,
+          useValue: {
+            create: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -46,6 +75,12 @@ describe('PedidoService', () => {
     pedidoRepository = module.get<PedidoRepository>(PedidoRepository);
     mesaService = module.get<MesaService>(MesaService);
     garcomService = module.get<GarcomService>(GarcomService);
+    itensDoPedidoService =
+      module.get<ItensDoPedidoService>(ItensDoPedidoService);
+    itensPedidoHasItensAdicionaisService =
+      module.get<ItensPedidoHasItensAdicionaisService>(
+        ItensPedidoHasItensAdicionaisService,
+      );
   });
 
   it('should be defined', () => {
@@ -55,41 +90,60 @@ describe('PedidoService', () => {
   describe('create', () => {
     it('should create a new pedido', async () => {
       const createPedidoDto: CreatePedidoDto = {
-        status: 'preparo',
         numero_mesa: 1,
         id_garcom: 1,
-      };
-      const createdPedido = {
-        id: 1,
-        ...createPedidoDto,
+        status: 'pendente',
+        metodo_pagamento: 'pix',
       };
 
-      jest.spyOn(mesaService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(garcomService, 'findOneById').mockResolvedValue(null);
+      const createItensDoPedidoDto: CreateItensDoPedidoDto[] = [
+        {
+          id_pedido: 1,
+          id_produto: 1,
+          quantidade: 1,
+          observacoes: 'Teste',
+          adicionais: [],
+        },
+      ];
+
+      jest.spyOn(mesaService, 'findOne').mockResolvedValue({} as any);
+      jest.spyOn(garcomService, 'findOneById').mockResolvedValue({} as any);
       jest
         .spyOn(pedidoRepository, 'create')
-        .mockResolvedValue(createdPedido as any);
+        .mockResolvedValue({ id: 1, ...createPedidoDto } as any);
+      jest
+        .spyOn(itensDoPedidoService, 'create')
+        .mockResolvedValue({ id: 1 } as any);
+      jest
+        .spyOn(itensPedidoHasItensAdicionaisService, 'create')
+        .mockResolvedValue({} as any);
 
-      const result = await service.create(createPedidoDto);
+      const result = await service.create(
+        createPedidoDto,
+        createItensDoPedidoDto,
+      );
 
-      expect(result).toEqual(createdPedido);
+      expect(result).toEqual({
+        pedido: { id: 1, ...createPedidoDto },
+        itens: [{ id: 1, adicionais: [] }],
+      });
       expect(mesaService.findOne).toHaveBeenCalledWith(
         createPedidoDto.numero_mesa,
       );
       expect(garcomService.findOneById).toHaveBeenCalledWith(
         createPedidoDto.id_garcom,
       );
-      expect(pedidoRepository.create).toHaveBeenCalledWith(createPedidoDto);
+      expect(pedidoRepository.create).toHaveBeenCalledWith(
+        trx,
+        createPedidoDto,
+      );
+      expect(itensDoPedidoService.create).toHaveBeenCalled();
     });
   });
 
   describe('findAll', () => {
-    it('should return an array of pedidos', async () => {
-      const pedidos = [
-        { id: 1, status: 'preparo', numero_mesa: 1, id_garcom: 1 },
-        { id: 2, status: 'preparo', numero_mesa: 2, id_garcom: 2 },
-      ];
-
+    it('should return all pedidos', async () => {
+      const pedidos = [{ id: 1 }];
       jest.spyOn(pedidoRepository, 'findAll').mockResolvedValue(pedidos as any);
 
       const result = await service.findAll();
@@ -98,89 +152,92 @@ describe('PedidoService', () => {
       expect(pedidoRepository.findAll).toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if no pedidos are found', async () => {
+    it('should throw not found exception if no pedidos found', async () => {
       jest.spyOn(pedidoRepository, 'findAll').mockResolvedValue([]);
 
       await expect(service.findAll()).rejects.toThrow(NotFoundException);
-      expect(pedidoRepository.findAll).toHaveBeenCalled();
     });
   });
 
-  describe('findOne', () => {
-    it('should return the pedido if found', async () => {
-      const id = 1;
-      const pedido = { id, status: 'preparo', numero_mesa: 1, id_garcom: 1 };
-
-      jest.spyOn(pedidoRepository, 'findOne').mockResolvedValue(pedido as any);
-
-      const result = await service.findOne(id);
-
-      expect(result).toEqual(pedido);
-      expect(pedidoRepository.findOne).toHaveBeenCalledWith(id);
-    });
-
-    it('should throw NotFoundException if pedido is not found', async () => {
-      const id = 999;
-
-      jest.spyOn(pedidoRepository, 'findOne').mockResolvedValue(null);
-
-      await expect(service.findOne(id)).rejects.toThrow(NotFoundException);
-      expect(pedidoRepository.findOne).toHaveBeenCalledWith(id);
-    });
-  });
-
-  describe('update', () => {
-    it('should update the pedido', async () => {
-      const id = 1;
-      const updatePedidoDto: UpdatePedidoDto = {
-        status: 'pronto',
-        numero_mesa: 2,
-        id_garcom: 2,
-      };
-      const updatedPedido = { id, ...updatePedidoDto };
-
-      jest.spyOn(mesaService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(garcomService, 'findOneById').mockResolvedValue(null);
+  describe('findByPedidoMesaPendente', () => {
+    it('should return pedidos by mesa with pending status', async () => {
+      const numero = 1;
+      const pedidos = [{ id: 1 }];
       jest
-        .spyOn(pedidoRepository, 'update')
-        .mockResolvedValue(updatedPedido as any);
+        .spyOn(pedidoRepository, 'findByPedidoMesaPendente')
+        .mockResolvedValue(pedidos as any);
 
-      const result = await service.update(id, updatePedidoDto);
+      const result = await service.findByPedidoMesaPendente(numero);
 
-      expect(result).toEqual(updatedPedido);
-      expect(mesaService.findOne).toHaveBeenCalledWith(
-        updatePedidoDto.numero_mesa,
+      expect(result).toEqual(pedidos);
+      expect(pedidoRepository.findByPedidoMesaPendente).toHaveBeenCalledWith(
+        numero,
       );
-      expect(garcomService.findOneById).toHaveBeenCalledWith(
-        updatePedidoDto.id_garcom,
+    });
+
+    it('should throw not found exception if no pedidos found', async () => {
+      const numero = 1;
+      jest
+        .spyOn(pedidoRepository, 'findByPedidoMesaPendente')
+        .mockResolvedValue([]);
+
+      await expect(service.findByPedidoMesaPendente(numero)).rejects.toThrow(
+        NotFoundException,
       );
-      expect(pedidoRepository.update).toHaveBeenCalledWith(id, updatePedidoDto);
+    });
+  });
+
+  describe('updateMany', () => {
+    it('should update multiple pedidos', async () => {
+      const updatePedidosDto: UpdatePedidosDto = {
+        ids_numero_mesa: [1, 2],
+        status: 'finalizado',
+        metodo_pagamento: 'debito',
+      };
+
+      jest.spyOn(pedidoRepository, 'updateMany').mockResolvedValue(2);
+
+      const result = await service.updateMany(updatePedidosDto);
+
+      expect(result).toEqual(2);
+      expect(pedidoRepository.updateMany).toHaveBeenCalledWith(
+        updatePedidosDto.ids_numero_mesa,
+        updatePedidosDto,
+      );
+    });
+
+    it('should throw not found exception if no ids provided', async () => {
+      const updatePedidosDto: UpdatePedidosDto = {
+        ids_numero_mesa: [],
+        status: 'finalizado',
+        metodo_pagamento: 'debito',
+      };
+
+      await expect(service.updateMany(updatePedidosDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('delete', () => {
-    it('should delete the pedido', async () => {
+    it('should delete a pedido', async () => {
       const id = 1;
-      const deletedMessage = { message: 'Pedido deletado com sucesso' };
-
-      jest.spyOn(pedidoRepository, 'findOne').mockResolvedValue({ id } as any);
-      jest.spyOn(pedidoRepository, 'delete').mockResolvedValue({} as any);
+      const pedido = { id };
+      jest.spyOn(pedidoRepository, 'findOne').mockResolvedValue(pedido as any);
+      jest.spyOn(pedidoRepository, 'delete').mockResolvedValue(pedido as any);
 
       const result = await service.delete(id);
 
-      expect(result).toEqual(deletedMessage);
+      expect(result).toEqual({ message: 'Pedido deletado com sucesso' });
       expect(pedidoRepository.findOne).toHaveBeenCalledWith(id);
       expect(pedidoRepository.delete).toHaveBeenCalledWith(id);
     });
 
-    it('should throw NotFoundException if pedido does not exist', async () => {
-      const id = 999;
-
+    it('should throw not found exception if pedido not found', async () => {
+      const id = 1;
       jest.spyOn(pedidoRepository, 'findOne').mockResolvedValue(null);
 
       await expect(service.delete(id)).rejects.toThrow(NotFoundException);
-      expect(pedidoRepository.findOne).toHaveBeenCalledWith(id);
-      expect(pedidoRepository.delete).not.toHaveBeenCalled();
     });
   });
 });

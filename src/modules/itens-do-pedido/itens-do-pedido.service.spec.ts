@@ -1,14 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ItensDoPedidoService } from './itens-do-pedido.service';
 import { ItensDoPedidoRepository } from './itens-do-pedido.repository';
-import { PedidoService } from '../pedido/pedido.service';
 import { ProdutoService } from '../produto/produto.service';
 import { NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 describe('ItensDoPedidoService', () => {
   let service: ItensDoPedidoService;
   let repository: ItensDoPedidoRepository;
-  let pedidoService: PedidoService;
   let produtoService: ProdutoService;
 
   beforeEach(async () => {
@@ -26,12 +25,6 @@ describe('ItensDoPedidoService', () => {
           },
         },
         {
-          provide: PedidoService,
-          useValue: {
-            findOne: jest.fn(),
-          },
-        },
-        {
           provide: ProdutoService,
           useValue: {
             findOne: jest.fn(),
@@ -42,16 +35,15 @@ describe('ItensDoPedidoService', () => {
 
     service = module.get<ItensDoPedidoService>(ItensDoPedidoService);
     repository = module.get<ItensDoPedidoRepository>(ItensDoPedidoRepository);
-    pedidoService = module.get<PedidoService>(PedidoService);
     produtoService = module.get<ProdutoService>(ProdutoService);
   });
 
-  it('should be defined', () => {
+  it('deve ser definido', () => {
     expect(service).toBeDefined();
   });
 
   describe('create', () => {
-    it('should create an item of order', async () => {
+    it('deve criar um item do pedido', async () => {
       const createItensDoPedidoDto = {
         id_pedido: 1,
         id_produto: 1,
@@ -60,17 +52,19 @@ describe('ItensDoPedidoService', () => {
       };
       const result = { id: 1, ...createItensDoPedidoDto };
 
-      (pedidoService.findOne as jest.Mock).mockResolvedValue({});
       (produtoService.findOne as jest.Mock).mockResolvedValue({});
       (repository.create as jest.Mock).mockResolvedValue(result);
 
-      expect(await service.create(createItensDoPedidoDto)).toEqual(result);
-      expect(pedidoService.findOne).toHaveBeenCalledWith(1);
+      const trx = {} as Prisma.TransactionClient;
+      expect(await service.create(trx, createItensDoPedidoDto)).toEqual(result);
       expect(produtoService.findOne).toHaveBeenCalledWith(1);
-      expect(repository.create).toHaveBeenCalledWith(createItensDoPedidoDto);
+      expect(repository.create).toHaveBeenCalledWith(
+        trx,
+        createItensDoPedidoDto,
+      );
     });
 
-    it('should throw NotFoundException if pedido not found', async () => {
+    it('deve lançar NotFoundException se produto não for encontrado', async () => {
       const createItensDoPedidoDto = {
         id_pedido: 1,
         id_produto: 1,
@@ -78,30 +72,12 @@ describe('ItensDoPedidoService', () => {
         observacoes: 'none',
       };
 
-      (pedidoService.findOne as jest.Mock).mockRejectedValue(
-        new NotFoundException('Pedido não encontrada'),
-      );
-
-      await expect(service.create(createItensDoPedidoDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(pedidoService.findOne).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw NotFoundException if produto not found', async () => {
-      const createItensDoPedidoDto = {
-        id_pedido: 1,
-        id_produto: 1,
-        quantidade: 1,
-        observacoes: 'none',
-      };
-
-      (pedidoService.findOne as jest.Mock).mockResolvedValue({});
       (produtoService.findOne as jest.Mock).mockRejectedValue(
         new NotFoundException('Produto não encontrado'),
       );
 
-      await expect(service.create(createItensDoPedidoDto)).rejects.toThrow(
+      const trx = {} as Prisma.TransactionClient;
+      await expect(service.create(trx, createItensDoPedidoDto)).rejects.toThrow(
         NotFoundException,
       );
       expect(produtoService.findOne).toHaveBeenCalledWith(1);
@@ -109,7 +85,7 @@ describe('ItensDoPedidoService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of items', async () => {
+    it('deve retornar um array de itens', async () => {
       const items = [{ id: 1 }, { id: 2 }];
       (repository.findAll as jest.Mock).mockResolvedValue(items);
 
@@ -117,7 +93,7 @@ describe('ItensDoPedidoService', () => {
       expect(result).toEqual(items);
     });
 
-    it('should throw NotFoundException if no items found', async () => {
+    it('deve lançar NotFoundException se nenhum item for encontrado', async () => {
       (repository.findAll as jest.Mock).mockResolvedValue([]);
 
       await expect(service.findAll()).rejects.toThrow(NotFoundException);
@@ -125,7 +101,7 @@ describe('ItensDoPedidoService', () => {
   });
 
   describe('findOne', () => {
-    it('should return an item by id', async () => {
+    it('deve retornar um item pelo id', async () => {
       const item = { id: 1 };
       (repository.findOne as jest.Mock).mockResolvedValue(item);
 
@@ -133,7 +109,7 @@ describe('ItensDoPedidoService', () => {
       expect(result).toEqual(item);
     });
 
-    it('should throw NotFoundException if item not found', async () => {
+    it('deve lançar NotFoundException se o item não for encontrado', async () => {
       (repository.findOne as jest.Mock).mockResolvedValue(null);
 
       await expect(service.findOne(1)).rejects.toThrow(NotFoundException);
@@ -141,7 +117,7 @@ describe('ItensDoPedidoService', () => {
   });
 
   describe('update', () => {
-    it('should update an item', async () => {
+    it('deve atualizar um item', async () => {
       const updateItensDoPedidoDto = {
         id_pedido: 1,
         id_produto: 1,
@@ -151,7 +127,6 @@ describe('ItensDoPedidoService', () => {
       const item = { id: 1, ...updateItensDoPedidoDto };
 
       (repository.findOne as jest.Mock).mockResolvedValue(item);
-      (pedidoService.findOne as jest.Mock).mockResolvedValue({});
       (produtoService.findOne as jest.Mock).mockResolvedValue({});
       (repository.update as jest.Mock).mockResolvedValue(item);
 
@@ -159,7 +134,7 @@ describe('ItensDoPedidoService', () => {
       expect(result).toEqual(item);
     });
 
-    it('should throw NotFoundException if item to update not found', async () => {
+    it('deve lançar NotFoundException se o item a ser atualizado não for encontrado', async () => {
       const updateItensDoPedidoDto = {
         id_pedido: 1,
         id_produto: 1,
@@ -174,7 +149,7 @@ describe('ItensDoPedidoService', () => {
       );
     });
 
-    it('should throw NotFoundException if pedido not found when updating', async () => {
+    it('deve lançar NotFoundException se produto não for encontrado ao atualizar', async () => {
       const updateItensDoPedidoDto = {
         id_pedido: 1,
         id_produto: 1,
@@ -184,27 +159,6 @@ describe('ItensDoPedidoService', () => {
       const item = { id: 1, ...updateItensDoPedidoDto };
 
       (repository.findOne as jest.Mock).mockResolvedValue(item);
-      (pedidoService.findOne as jest.Mock).mockRejectedValue(
-        new NotFoundException('Pedido não encontrada'),
-      );
-
-      await expect(service.update(1, updateItensDoPedidoDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(pedidoService.findOne).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw NotFoundException if produto not found when updating', async () => {
-      const updateItensDoPedidoDto = {
-        id_pedido: 1,
-        id_produto: 1,
-        quantidade: 2,
-        observacoes: 'updated',
-      };
-      const item = { id: 1, ...updateItensDoPedidoDto };
-
-      (repository.findOne as jest.Mock).mockResolvedValue(item);
-      (pedidoService.findOne as jest.Mock).mockResolvedValue({});
       (produtoService.findOne as jest.Mock).mockRejectedValue(
         new NotFoundException('Produto não encontrado'),
       );
@@ -217,7 +171,7 @@ describe('ItensDoPedidoService', () => {
   });
 
   describe('delete', () => {
-    it('should delete an item', async () => {
+    it('deve deletar um item', async () => {
       const item = { id: 1 };
 
       (repository.findOne as jest.Mock).mockResolvedValue(item);
@@ -227,7 +181,7 @@ describe('ItensDoPedidoService', () => {
       expect(result).toEqual(item);
     });
 
-    it('should throw NotFoundException if item to delete not found', async () => {
+    it('deve lançar NotFoundException se o item a ser deletado não for encontrado', async () => {
       (repository.findOne as jest.Mock).mockResolvedValue(null);
 
       await expect(service.delete(1)).rejects.toThrow(NotFoundException);

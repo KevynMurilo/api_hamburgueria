@@ -1,13 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { ItensPedidoHasItensAdicionaisDto } from './dto/itens-pedido-has-itens-adicionais.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ItensPedidoHasItensAdicionaisRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: ItensPedidoHasItensAdicionaisDto) {
-    return await this.prisma.itemDoPedidoItemAdicional.create({ data });
+  async create(
+    trx: Prisma.TransactionClient,
+    data: ItensPedidoHasItensAdicionaisDto,
+  ) {
+    return await trx.itemDoPedidoItemAdicional.create({
+      data: {
+        itemDoPedido: { connect: { id: data.id_item_do_pedido } },
+        itemAdicional: { connect: { id: data.id_item_adicional } },
+      },
+    });
   }
 
   async findOne(data: ItensPedidoHasItensAdicionaisDto) {
