@@ -120,7 +120,7 @@ export class PedidoService {
     const itensDoPedido = [];
 
     for (const itemDto of createItensDoPedidoDto) {
-      const { adicionais, ...itemData } = itemDto;
+      const { adicionais = [], ...itemData } = itemDto; // Use [] como valor padrão para adicionais
 
       const produto = await this.produtoService.findOne(itemDto.id_produto);
       const itemDoPedido = await this.itensDoPedidoService.create(trx, {
@@ -147,9 +147,14 @@ export class PedidoService {
   private async createItensAdicionais(
     trx: Prisma.TransactionClient,
     itemDoPedidoId: number,
-    adicionais: { id_item_adicional: number }[],
+    adicionais: { id_item_adicional: number }[] = [], // Valor padrão é um array vazio
   ) {
     const adicionaisCriados = [];
+
+    // Verifique se 'adicionais' é um array, mesmo se não for fornecido
+    if (!Array.isArray(adicionais)) {
+      throw new BadRequestException('Adicionais deve ser um array.');
+    }
 
     for (const adicionalDto of adicionais) {
       await this.itensPedidoHasItensAdicionaisService.create(trx, {
