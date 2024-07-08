@@ -8,6 +8,7 @@ const select = {
   id: true,
   numero_mesa: true,
   id_garcom: true,
+  id_externo: true,
   garcom: {
     select: {
       nome: true,
@@ -62,8 +63,9 @@ export class PedidoRepository {
         hora_pedido: new Date(),
         status: createPedidoDto.status,
         metodo_pagamento: createPedidoDto.metodo_pagamento,
-        mesa: { connect: { numero: createPedidoDto.numero_mesa } },
-        garcom: { connect: { id: createPedidoDto.id_garcom } },
+        numero_mesa: createPedidoDto.numero_mesa,
+        id_externo: createPedidoDto.id_externo,
+        id_garcom: createPedidoDto.id_garcom,
       },
     });
   }

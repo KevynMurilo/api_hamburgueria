@@ -2,13 +2,27 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
 import { ProdutoRepository } from './produto.repository';
+import { ProdutoHasCategoriaService } from '../produto-has-categoria/produto-has-categoria.service';
 
 @Injectable()
 export class ProdutoService {
-  constructor(private readonly produtoRepository: ProdutoRepository) {}
+  constructor(
+    private readonly produtoRepository: ProdutoRepository,
+    private readonly produtoHasCategoriaService: ProdutoHasCategoriaService,
+  ) {}
 
   async create(createProdutoDto: CreateProdutoDto) {
-    return await this.produtoRepository.create(createProdutoDto);
+    const produto = await this.produtoRepository.create(createProdutoDto);
+
+    const categorias = [];
+    for (const id_categoria of createProdutoDto.ids_categorias) {
+      const categoria = await this.produtoHasCategoriaService.create({
+        id_produto: produto.id,
+        id_categoria,
+      });
+      categorias.push(categoria);
+    }
+    return { produto, categorias };
   }
 
   async findAll() {
@@ -19,14 +33,8 @@ export class ProdutoService {
     return produtos;
   }
 
-  async findByCategory(id_categoria: number) {
-    const produtos = await this.produtoRepository.findByCategory(id_categoria);
-    if (produtos.length === 0) {
-      throw new NotFoundException(
-        'Nenhum produto encontrado para esta categoria',
-      );
-    }
-    return produtos;
+  async findByCategory(id: number) {
+    return await this.produtoRepository.findByCategory(id);
   }
 
   async findOne(id: number) {

@@ -10,6 +10,8 @@ import { PedidoModule } from './modules/pedido/pedido.module';
 import { ItensDoPedidoModule } from './modules/itens-do-pedido/itens-do-pedido.module';
 import { ItensAdicionaisModule } from './modules/itens-adicionais/itens-adicionais.module';
 import { ItensPedidoHasItensAdicionaisModule } from './modules/itens-pedido-has-itens-adicionais/itens-pedido-has-itens-adicionais.module';
+import { PrintTcpModule } from './modules/print-tcp/print-tcp.module';
+import { AtendimentoExternoModule } from './modules/atendimento-externo/atendimento-externo.module';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { ItensPedidoHasItensAdicionaisModule } from './modules/itens-pedido-has-
     PrismaModule,
     AuthModule,
     MesaModule,
+    AtendimentoExternoModule,
     CategoriaModule,
     ProdutoModule,
     ProdutoHasCategoriaModule,
@@ -24,6 +27,7 @@ import { ItensPedidoHasItensAdicionaisModule } from './modules/itens-pedido-has-
     ItensDoPedidoModule,
     ItensAdicionaisModule,
     ItensPedidoHasItensAdicionaisModule,
+    PrintTcpModule,
   ],
   controllers: [],
   providers: [],

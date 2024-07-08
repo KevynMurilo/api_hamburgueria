@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProdutoHasCategoriaService } from './produto-has-categoria.service';
 import { ProdutoHasCategoriaRepository } from './produto-has-categoria.repository';
-import { ProdutoService } from '../produto/produto.service';
 import { CategoriaService } from '../categoria/categoria.service';
-import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ProdutoCategoriaDto } from './dto/produto-categoria.dto';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('ProdutoHasCategoriaService', () => {
   let service: ProdutoHasCategoriaService;
   let produtoHasCategoriaRepository: ProdutoHasCategoriaRepository;
-  let produtoService: ProdutoService;
   let categoriaService: CategoriaService;
+
+  const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 2 };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,12 +22,6 @@ describe('ProdutoHasCategoriaService', () => {
             create: jest.fn(),
             findOne: jest.fn(),
             delete: jest.fn(),
-          },
-        },
-        {
-          provide: ProdutoService,
-          useValue: {
-            findOne: jest.fn(),
           },
         },
         {
@@ -45,39 +39,28 @@ describe('ProdutoHasCategoriaService', () => {
     produtoHasCategoriaRepository = module.get<ProdutoHasCategoriaRepository>(
       ProdutoHasCategoriaRepository,
     );
-    produtoService = module.get<ProdutoService>(ProdutoService);
     categoriaService = module.get<CategoriaService>(CategoriaService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   describe('create', () => {
+    it('should be defined', () => {
+      expect(service).toBeDefined();
+    });
+
     it('should create a product-category link', async () => {
-      const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 1 };
-      jest
-        .spyOn(produtoHasCategoriaRepository, 'findOne')
-        .mockResolvedValue(null);
-      jest.spyOn(produtoService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(categoriaService, 'findOne').mockResolvedValue(null);
-      jest
-        .spyOn(produtoHasCategoriaRepository, 'create')
-        .mockResolvedValue(dto);
+      categoriaService.findOne = jest.fn().mockResolvedValue({});
+      produtoHasCategoriaRepository.findOne = jest.fn().mockResolvedValue(null);
+      produtoHasCategoriaRepository.create = jest.fn().mockResolvedValue(dto);
 
       const result = await service.create(dto);
       expect(result).toEqual(dto);
       expect(produtoHasCategoriaRepository.findOne).toHaveBeenCalledWith(dto);
-      expect(produtoService.findOne).toHaveBeenCalledWith(dto.id_produto);
       expect(categoriaService.findOne).toHaveBeenCalledWith(dto.id_categoria);
       expect(produtoHasCategoriaRepository.create).toHaveBeenCalledWith(dto);
     });
 
     it('should throw ConflictException if link already exists', async () => {
-      const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 1 };
-      jest
-        .spyOn(produtoHasCategoriaRepository, 'findOne')
-        .mockResolvedValue(dto);
+      produtoHasCategoriaRepository.findOne = jest.fn().mockResolvedValue(dto);
 
       await expect(service.create(dto)).rejects.toThrow(ConflictException);
     });
@@ -85,10 +68,7 @@ describe('ProdutoHasCategoriaService', () => {
 
   describe('findOne', () => {
     it('should find a product-category link', async () => {
-      const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 1 };
-      jest
-        .spyOn(produtoHasCategoriaRepository, 'findOne')
-        .mockResolvedValue(dto);
+      produtoHasCategoriaRepository.findOne = jest.fn().mockResolvedValue(dto);
 
       const result = await service.findOne(dto);
       expect(result).toEqual(dto);
@@ -96,10 +76,7 @@ describe('ProdutoHasCategoriaService', () => {
     });
 
     it('should throw NotFoundException if link not found', async () => {
-      const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 1 };
-      jest
-        .spyOn(produtoHasCategoriaRepository, 'findOne')
-        .mockResolvedValue(null);
+      produtoHasCategoriaRepository.findOne = jest.fn().mockResolvedValue(null);
 
       await expect(service.findOne(dto)).rejects.toThrow(NotFoundException);
     });
@@ -107,24 +84,18 @@ describe('ProdutoHasCategoriaService', () => {
 
   describe('delete', () => {
     it('should delete a product-category link', async () => {
-      const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 1 };
-      jest.spyOn(produtoService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(categoriaService, 'findOne').mockResolvedValue(null);
-      jest
-        .spyOn(produtoHasCategoriaRepository, 'delete')
-        .mockResolvedValue(dto);
+      categoriaService.findOne = jest.fn().mockResolvedValue({});
+      produtoHasCategoriaRepository.delete = jest.fn().mockResolvedValue(dto);
 
       const result = await service.delete(dto);
       expect(result).toEqual(dto);
-      expect(produtoService.findOne).toHaveBeenCalledWith(dto.id_produto);
       expect(categoriaService.findOne).toHaveBeenCalledWith(dto.id_categoria);
       expect(produtoHasCategoriaRepository.delete).toHaveBeenCalledWith(dto);
     });
 
-    it('should throw NotFoundException if product or category not found', async () => {
-      const dto: ProdutoCategoriaDto = { id_produto: 1, id_categoria: 1 };
-      jest
-        .spyOn(produtoService, 'findOne')
+    it('should throw NotFoundException if category not found', async () => {
+      categoriaService.findOne = jest
+        .fn()
         .mockRejectedValue(new NotFoundException());
 
       await expect(service.delete(dto)).rejects.toThrow(NotFoundException);
