@@ -25,19 +25,19 @@ export class ProdutoController {
     return await this.produtoService.findAll();
   }
 
-  @Get('/categoria/:id_categoria')
-  async findByCategory(@Param('id_categoria') id_categoria: string) {
-    return await this.produtoService.findByCategory(+id_categoria);
+  @Get('/categoria/:id')
+  async findByCategory(@Param('id') id: number) {
+    return await this.produtoService.findByCategory(+id);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: number) {
     return await this.produtoService.findOne(+id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateProdutoDto: UpdateProdutoDto,
   ) {
     return await this.produtoService.update(+id, updateProdutoDto);

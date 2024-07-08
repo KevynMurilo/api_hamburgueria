@@ -1,10 +1,23 @@
 import { StatusMetodoPagamento, StatusPedido } from '@prisma/client';
-import { IsEnum, IsInt, IsNotEmpty } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreatePedidoDto {
   @IsInt()
-  @IsNotEmpty({ message: 'Número da mesa é obrigatório' })
-  numero_mesa: number;
+  numero_mesa?: number;
+
+  @IsInt()
+  id_externo?: number;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  nome_cliente?: string;
 
   @IsInt()
   @IsNotEmpty({ message: 'Id da mesa é obrigatório' })

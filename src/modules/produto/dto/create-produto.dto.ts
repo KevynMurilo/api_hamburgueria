@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class CreateProdutoDto {
   @IsString()
@@ -11,4 +17,9 @@ export class CreateProdutoDto {
   @IsNumber()
   @IsNotEmpty({ message: 'Preço é obrigatório' })
   preco: number;
+
+  @IsArray()
+  @ArrayNotEmpty({ message: 'Pelo menos uma categoria deve ser selecionada' })
+  @IsNumber({}, { each: true })
+  ids_categorias: number[];
 }

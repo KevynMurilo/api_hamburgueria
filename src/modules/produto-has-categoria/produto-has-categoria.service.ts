@@ -5,14 +5,12 @@ import {
 } from '@nestjs/common';
 import { ProdutoHasCategoriaRepository } from './produto-has-categoria.repository';
 import { ProdutoCategoriaDto } from './dto/produto-categoria.dto';
-import { ProdutoService } from '../produto/produto.service';
 import { CategoriaService } from '../categoria/categoria.service';
 
 @Injectable()
 export class ProdutoHasCategoriaService {
   constructor(
     private readonly produtoHasCategoriaRepository: ProdutoHasCategoriaRepository,
-    private readonly produtoService: ProdutoService,
     private readonly categoriaService: CategoriaService,
   ) {}
 
@@ -24,7 +22,6 @@ export class ProdutoHasCategoriaService {
         'Vinculo entre produto e categoria já registrado',
       );
 
-    await this.produtoService.findOne(produtoCategoriaDto.id_produto);
     await this.categoriaService.findOne(produtoCategoriaDto.id_categoria);
 
     return await this.produtoHasCategoriaRepository.create(produtoCategoriaDto);
@@ -43,8 +40,6 @@ export class ProdutoHasCategoriaService {
   }
 
   async delete(produtoCategoriaDto: ProdutoCategoriaDto) {
-    await this.produtoService.findOne(produtoCategoriaDto.id_produto);
-
     await this.categoriaService.findOne(produtoCategoriaDto.id_categoria);
 
     return await this.produtoHasCategoriaRepository.delete(produtoCategoriaDto);

@@ -9,21 +9,44 @@ export class ProdutoRepository {
 
   async create(data: Prisma.ProdutoCreateInput): Promise<Produto> {
     return await this.prisma.produto.create({
-      data,
+      data: {
+        nome: data.nome,
+        descricao: data.descricao,
+        preco: data.preco,
+      },
     });
   }
 
-  async findAll(): Promise<Produto[]> {
-    return await this.prisma.produto.findMany();
+  async findAll() {
+    return await this.prisma.produto.findMany({
+      select: {
+        id: true,
+        nome: true,
+        descricao: true,
+        preco: true,
+        produtoCategoria: {
+          select: {
+            categoria: {
+              select: {
+                nome: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
-  async findByCategory(id_categoria: number): Promise<Produto[]> {
+  async findByCategory(id: number) {
     return await this.prisma.produto.findMany({
-      where: {
+      where: { id },
+      select: {
         produtoCategoria: {
-          some: {
+          select: {
             categoria: {
-              id: id_categoria,
+              select: {
+                nome: true,
+              },
             },
           },
         },

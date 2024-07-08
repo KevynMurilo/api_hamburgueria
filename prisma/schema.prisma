@@ -16,6 +16,13 @@ model Mesa {
   @@map("mesas")
 }
 
+model Externo {
+  id      Int        @id @default(autoincrement())
+  nome_cliente  String
+  status  StatusExterno @default(pendente)
+  pedidos Pedido[]
+}
+
 model Garcom {
   id      Int      @id @default(autoincrement())
   nome    String
@@ -28,12 +35,14 @@ model Garcom {
 
 model Pedido {
   id          Int            @id @default(autoincrement())
-  numero_mesa Int
+  numero_mesa Int?
+  id_externo  Int?
   id_garcom   Int
   hora_pedido DateTime       @default(now())
   status      StatusPedido   @default(pendente)
   metodo_pagamento StatusMetodoPagamento @default(pix)
-  mesa        Mesa           @relation(fields: [numero_mesa], references: [numero])
+  mesa        Mesa?           @relation(fields: [numero_mesa], references: [numero])
+  externo     Externo?        @relation(fields: [id_externo], references: [id])
   garcom      Garcom         @relation(fields: [id_garcom], references: [id])
   itens       ItemDoPedido[]
 
@@ -104,6 +113,11 @@ model ItemDoPedidoItemAdicional {
 enum StatusMesa {
   disponivel
   ocupada
+}
+
+enum StatusExterno {
+  pendente
+  finalizado
 }
 
 enum StatusPedido {
