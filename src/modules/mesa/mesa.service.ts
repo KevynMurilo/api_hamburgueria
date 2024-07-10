@@ -6,6 +6,7 @@ import {
 import { MesaRepository } from './mesa.repository';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { UpdateMesaDto } from './dto/update-mesa.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MesaService {
@@ -35,10 +36,13 @@ export class MesaService {
     return mesa;
   }
 
-  async update(numero: number, updateMesaDto: UpdateMesaDto) {
+  async update(
+    numero: number,
+    updateMesaDto: UpdateMesaDto,
+    trx?: Prisma.TransactionClient,
+  ) {
     await this.findOne(numero);
-
-    return await this.mesaRepository.update(numero, updateMesaDto);
+    return await this.mesaRepository.update(numero, updateMesaDto, trx);
   }
 
   async delete(numero: number) {

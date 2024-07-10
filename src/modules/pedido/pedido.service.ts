@@ -64,6 +64,13 @@ export class PedidoService {
 
       if (createPedidoDto.numero_mesa) {
         await this.mesaService.findOne(createPedidoDto.numero_mesa);
+        await this.mesaService.update(
+          createPedidoDto.numero_mesa,
+          {
+            status: 'ocupada',
+          },
+          trx,
+        );
       } else {
         const atendimento = await this.atendimentoExternoService.create(
           trx,
@@ -120,7 +127,7 @@ export class PedidoService {
     const itensDoPedido = [];
 
     for (const itemDto of createItensDoPedidoDto) {
-      const { adicionais = [], ...itemData } = itemDto; // Use [] como valor padrão para adicionais
+      const { adicionais = [], ...itemData } = itemDto;
 
       const produto = await this.produtoService.findOne(itemDto.id_produto);
       const itemDoPedido = await this.itensDoPedidoService.create(trx, {
@@ -147,11 +154,10 @@ export class PedidoService {
   private async createItensAdicionais(
     trx: Prisma.TransactionClient,
     itemDoPedidoId: number,
-    adicionais: { id_item_adicional: number }[] = [], // Valor padrão é um array vazio
+    adicionais: { id_item_adicional: number }[] = [],
   ) {
     const adicionaisCriados = [];
 
-    // Verifique se 'adicionais' é um array, mesmo se não for fornecido
     if (!Array.isArray(adicionais)) {
       throw new BadRequestException('Adicionais deve ser um array.');
     }
@@ -187,6 +193,24 @@ export class PedidoService {
     const pedidos = await this.pedidoRepository.findAll();
     if (pedidos.length === 0) {
       throw new NotFoundException('Nenhum pedido cadastrado');
+    }
+    return pedidos;
+  }
+
+  async findManyPedidoCliente() {
+    const pedidos = await this.pedidoRepository.findManyPedidoCliente();
+    if (pedidos.length === 0) {
+      throw new NotFoundException(`Nenhum cliente com pedido pendente`);
+    }
+    return pedidos;
+  }
+
+  async findByPedidoClientePendente(id: number) {
+    const pedidos = await this.pedidoRepository.findByPedidoClientePendente(id);
+    if (pedidos.length === 0) {
+      throw new NotFoundException(
+        `Nenhum pedido pendente pro cliente de id ${id}`,
+      );
     }
     return pedidos;
   }

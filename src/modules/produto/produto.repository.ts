@@ -38,12 +38,13 @@ export class ProdutoRepository {
   }
 
   async findByCategory(id: number) {
-    return await this.prisma.produto.findMany({
+    return await this.prisma.categoria.findMany({
       where: { id },
       select: {
+        nome: true,
         produtoCategoria: {
-          select: {
-            categoria: {
+          include: {
+            produto: {
               select: {
                 nome: true,
               },

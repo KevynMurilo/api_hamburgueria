@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AtendimentoExternoService } from './atendimento-externo.service';
 import { PrismaService } from '../database/prisma.service';
 import { AtendimentoExternoRepository } from './atendimento-externo.repository';
-// import { AtendimentoExternoController } from './atendimento-externo.controller';
+import { AtendimentoExternoController } from './atendimento-externo.controller';
 
 @Module({
   providers: [
@@ -10,7 +10,7 @@ import { AtendimentoExternoRepository } from './atendimento-externo.repository';
     AtendimentoExternoRepository,
     PrismaService,
   ],
-  controllers: [],
+  controllers: [AtendimentoExternoController],
   exports: [AtendimentoExternoService],
 })
 export class AtendimentoExternoModule {}

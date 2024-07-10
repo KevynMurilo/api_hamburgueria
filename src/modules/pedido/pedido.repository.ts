@@ -14,6 +14,11 @@ const select = {
       nome: true,
     },
   },
+  externo: {
+    select: {
+      nome_cliente: true,
+    },
+  },
   hora_pedido: true,
   status: true,
   metodo_pagamento: true,
@@ -79,6 +84,26 @@ export class PedidoRepository {
   async findOne(id: number): Promise<Pedido> {
     return await this.prisma.pedido.findUnique({
       where: { id },
+      select,
+    });
+  }
+
+  async findManyPedidoCliente() {
+    return await this.prisma.pedido.findMany({
+      where: {
+        id_externo: { not: null },
+        status: 'pendente',
+      },
+      select,
+    });
+  }
+
+  async findByPedidoClientePendente(id: number) {
+    return await this.prisma.pedido.findMany({
+      where: {
+        id_externo: id,
+        status: 'pendente',
+      },
       select,
     });
   }

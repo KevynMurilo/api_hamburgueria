@@ -22,6 +22,15 @@ export class AtendimentoExternoService {
     return atendimentosExternos;
   }
 
+  async findByPendentes() {
+    const atendimentos =
+      await this.atendimentoExternoRepository.findByPendentes();
+    if (atendimentos.length === 0) {
+      throw new NotFoundException('Nenhum atendimento externo cadastrado');
+    }
+    return atendimentos;
+  }
+
   async findOne(id: number) {
     const atendimentosExterno =
       await this.atendimentoExternoRepository.findOne(id);
