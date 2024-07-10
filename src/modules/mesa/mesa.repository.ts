@@ -23,8 +23,13 @@ export class MesaRepository {
     });
   }
 
-  async update(numero: number, updateMesaDto: UpdateMesaDto): Promise<Mesa> {
-    return await this.prisma.mesa.update({
+  async update(
+    numero: number,
+    updateMesaDto: UpdateMesaDto,
+    trx?: Prisma.TransactionClient,
+  ): Promise<Mesa> {
+    const prismaClient = trx || this.prisma;
+    return await prismaClient.mesa.update({
       where: { numero },
       data: {
         status: updateMesaDto.status,

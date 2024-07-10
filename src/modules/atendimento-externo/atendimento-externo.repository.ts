@@ -19,6 +19,14 @@ export class AtendimentoExternoRepository {
     return await this.prisma.externo.findMany();
   }
 
+  async findByPendentes() {
+    return await this.prisma.externo.findMany({
+      where: {
+        status: 'pendente',
+      },
+    });
+  }
+
   async findOne(id: number): Promise<Externo> {
     return await this.prisma.externo.findUnique({
       where: { id: id },

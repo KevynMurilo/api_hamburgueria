@@ -28,9 +28,19 @@ export class PedidoController {
     return await this.pedidoService.findAll();
   }
 
+  @Get('pendente/cliente')
+  async findManyPedidoCliente() {
+    return await this.pedidoService.findManyPedidoCliente();
+  }
+
   @Get('mesa/:numero')
   async findByPedidoMesa(@Param('numero') numero: number) {
     return await this.pedidoService.findByPedidoMesaPendente(+numero);
+  }
+
+  @Get('cliente/:id')
+  async findByClienteMesa(@Param('id') id: number) {
+    return await this.pedidoService.findByPedidoClientePendente(+id);
   }
 
   @Patch('update/status')
