@@ -102,4 +102,15 @@ export class PrintTcpService {
   isConnected(): boolean {
     return this.connected;
   }
+
+  async sendToPrinter(pedidoCompleto: any) {
+    const printResponse = await this.sendPedido(pedidoCompleto);
+
+    if (
+      printResponse ===
+      'Erro ao conectar na impressora - Error: Can not find printer'
+    ) {
+      return { message: 'Erro ao enviar para a impressora.' };
+    }
+  }
 }

@@ -45,7 +45,9 @@ export class PedidoController {
 
   @Patch('update/status')
   async updateStatus(@Body() updatePedidosDto: UpdatePedidosDto) {
-    return await this.pedidoService.updateMany(updatePedidosDto);
+    return await this.pedidoService.updateManyStatusEMetodoPagamento(
+      updatePedidosDto,
+    );
   }
   @Delete(':id')
   async remove(@Param('id') id: number) {
