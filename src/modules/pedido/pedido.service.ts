@@ -103,7 +103,8 @@ export class PedidoService {
 
       let printResponse: PrintResponse | undefined;
       if (this.printTcpService.isConnected()) {
-        printResponse = await this.sendToPrinter(pedidoCompleto);
+        printResponse =
+          await this.printTcpService.sendToPrinter(pedidoCompleto);
         if (
           printResponse &&
           printResponse.message === 'Erro ao enviar para a impressora.'
@@ -178,17 +179,6 @@ export class PedidoService {
     return adicionaisCriados;
   }
 
-  private async sendToPrinter(pedidoCompleto: any) {
-    const printResponse = await this.printTcpService.sendPedido(pedidoCompleto);
-
-    if (
-      printResponse ===
-      'Erro ao conectar na impressora - Error: Can not find printer'
-    ) {
-      return { message: 'Erro ao enviar para a impressora.' };
-    }
-  }
-
   async findAll() {
     const pedidos = await this.pedidoRepository.findAll();
     if (pedidos.length === 0) {
@@ -224,7 +214,9 @@ export class PedidoService {
     return pedidos;
   }
 
-  async updateMany(updatePedidosDto: UpdatePedidosDto): Promise<number> {
+  async updateManyStatusEMetodoPagamento(
+    updatePedidosDto: UpdatePedidosDto,
+  ): Promise<number> {
     const { ids_numero_mesa } = updatePedidosDto;
     if (!ids_numero_mesa.length)
       throw new NotFoundException('Nenhum pedido encontrado para atualizar');
