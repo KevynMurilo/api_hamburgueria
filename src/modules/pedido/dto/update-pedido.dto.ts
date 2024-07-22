@@ -1,5 +1,6 @@
-import { IsArray, IsEnum, ArrayNotEmpty } from 'class-validator';
+import { IsArray, IsEnum, ArrayNotEmpty, IsOptional } from 'class-validator';
 import { StatusPedido, StatusMetodoPagamento } from '@prisma/client';
+import { UpdateItensDoPedidoDto } from 'src/modules/itens-do-pedido/dto/update-itens-do-pedido.dto';
 
 export class UpdatePedidosDto {
   @IsArray()
@@ -17,4 +18,8 @@ export class UpdatePedidosDto {
       'Metodo de pagamento inválido. Os valores permitidos são: pix, debito, credito e dinheiro',
   })
   metodo_pagamento: StatusMetodoPagamento;
+
+  @IsOptional()
+  @IsArray()
+  itens?: UpdateItensDoPedidoDto[];
 }

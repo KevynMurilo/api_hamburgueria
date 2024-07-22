@@ -1,7 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { ItensPedidoHasItensAdicionaisRepository } from './itens-pedido-has-itens-adicionais.repository';
 import { ItensPedidoHasItensAdicionaisDto } from './dto/itens-pedido-has-itens-adicionais.dto';
-import { ItensDoPedidoService } from '../itens-do-pedido/itens-do-pedido.service';
 import { ItensAdicionaisService } from '../itens-adicionais/itens-adicionais.service';
 import { Prisma } from '@prisma/client';
 
@@ -9,7 +12,6 @@ import { Prisma } from '@prisma/client';
 export class ItensPedidoHasItensAdicionaisService {
   constructor(
     private readonly itensPedidoHasItensAdicionaisRepository: ItensPedidoHasItensAdicionaisRepository,
-    private readonly itensDoPedidoService: ItensDoPedidoService,
     private readonly itensAdicionaisService: ItensAdicionaisService,
   ) {}
 
@@ -36,19 +38,30 @@ export class ItensPedidoHasItensAdicionaisService {
     );
   }
 
-  async delete(
-    itensPedidoHasItensAdicionaisDto: ItensPedidoHasItensAdicionaisDto,
+  async createMultipleAdditionalItems(
+    trx: Prisma.TransactionClient,
+    itemDoPedidoId: number,
+    adicionais: { id_item_adicional: number }[] = [],
   ) {
-    await this.itensDoPedidoService.findOne(
-      itensPedidoHasItensAdicionaisDto.id_item_do_pedido,
-    );
+    const adicionaisCriados = [];
 
-    await this.itensAdicionaisService.findOne(
-      itensPedidoHasItensAdicionaisDto.id_item_adicional,
-    );
+    if (!Array.isArray(adicionais)) {
+      throw new BadRequestException('Adicionais deve ser um array.');
+    }
 
-    return await this.itensPedidoHasItensAdicionaisRepository.delete(
-      itensPedidoHasItensAdicionaisDto,
-    );
+    for (const adicionalDto of adicionais) {
+      await this.create(trx, {
+        ...adicionalDto,
+        id_item_do_pedido: itemDoPedidoId,
+      });
+
+      const adicionalCompleto = await this.itensAdicionaisService.findOne(
+        adicionalDto.id_item_adicional,
+      );
+
+      adicionaisCriados.push({ itemAdicional: adicionalCompleto });
+    }
+
+    return adicionaisCriados;
   }
 }
