@@ -75,9 +75,14 @@ export class PedidoRepository {
     });
   }
 
-  async findAll(): Promise<Pedido[]> {
+  async findAll(skip: number, take: number): Promise<Pedido[]> {
     return await this.prisma.pedido.findMany({
       select,
+      skip,
+      take,
+      orderBy: {
+        id: 'desc',
+      },
     });
   }
 
@@ -118,7 +123,10 @@ export class PedidoRepository {
     });
   }
 
-  async updateMany(ids: number[], data: UpdatePedidosDto): Promise<number> {
+  async updateOrdersStatusAndPayment(
+    ids: number[],
+    data: UpdatePedidosDto,
+  ): Promise<number> {
     const result = await this.prisma.pedido.updateMany({
       where: { id: { in: ids } },
       data: {

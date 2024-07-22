@@ -4,12 +4,14 @@ import { UpdateItensDoPedidoDto } from './dto/update-itens-do-pedido.dto';
 import { ItensDoPedidoRepository } from './itens-do-pedido.repository';
 import { ProdutoService } from '../produto/produto.service';
 import { Prisma } from '@prisma/client';
+import { ItensPedidoHasItensAdicionaisService } from '../itens-pedido-has-itens-adicionais/itens-pedido-has-itens-adicionais.service';
 
 @Injectable()
 export class ItensDoPedidoService {
   constructor(
     private readonly itensDoPedidoRepository: ItensDoPedidoRepository,
     private readonly produtoService: ProdutoService,
+    private readonly itensPedidoHasItensAdicionaisService: ItensPedidoHasItensAdicionaisService,
   ) {}
 
   async create(
@@ -22,6 +24,39 @@ export class ItensDoPedidoService {
       trx,
       createItensDoPedidoDto,
     );
+  }
+
+  async createItensDoPedido(
+    trx: Prisma.TransactionClient,
+    pedidoId: number,
+    createItensDoPedidoDto: CreateItensDoPedidoDto[],
+  ) {
+    const itensDoPedido = [];
+
+    for (const itemDto of createItensDoPedidoDto) {
+      const { adicionais = [], ...itemData } = itemDto;
+
+      const produto = await this.produtoService.findOne(itemDto.id_produto);
+      const itemDoPedido = await this.create(trx, {
+        ...itemData,
+        id_pedido: pedidoId,
+      });
+
+      const itensAdicionais =
+        await this.itensPedidoHasItensAdicionaisService.createMultipleAdditionalItems(
+          trx,
+          itemDoPedido.id,
+          adicionais,
+        );
+
+      itensDoPedido.push({
+        ...itemDoPedido,
+        produto,
+        adicionais: itensAdicionais,
+      });
+    }
+
+    return itensDoPedido;
   }
 
   async findAll() {

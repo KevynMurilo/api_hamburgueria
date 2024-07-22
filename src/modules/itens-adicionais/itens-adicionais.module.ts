@@ -5,6 +5,7 @@ import { ItensAdicionaisRepository } from './itens-adicionais.repository';
 import { PrismaService } from '../database/prisma.service';
 
 @Module({
+  imports: [],
   controllers: [ItensAdicionaisController],
   providers: [ItensAdicionaisService, ItensAdicionaisRepository, PrismaService],
   exports: [ItensAdicionaisService],

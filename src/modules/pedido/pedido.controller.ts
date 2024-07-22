@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { UpdatePedidosDto } from './dto/update-pedido.dto';
@@ -24,8 +25,12 @@ export class PedidoController {
   }
 
   @Get()
-  async findAll() {
-    return await this.pedidoService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('perPage') perPage: number = 2,
+  ) {
+    const skip = (page - 1) * perPage;
+    return await this.pedidoService.findAll(skip, +perPage);
   }
 
   @Get('pendente/cliente')
@@ -45,7 +50,7 @@ export class PedidoController {
 
   @Patch('update/status')
   async updateStatus(@Body() updatePedidosDto: UpdatePedidosDto) {
-    return await this.pedidoService.updateManyStatusEMetodoPagamento(
+    return await this.pedidoService.updateOrdersStatusAndPayment(
       updatePedidosDto,
     );
   }

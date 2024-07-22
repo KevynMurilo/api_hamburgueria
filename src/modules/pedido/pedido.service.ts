@@ -13,10 +13,7 @@ import { ItensDoPedidoService } from '../itens-do-pedido/itens-do-pedido.service
 import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateItensDoPedidoDto } from '../itens-do-pedido/dto/create-itens-do-pedido.dto';
-import { ItensPedidoHasItensAdicionaisService } from '../itens-pedido-has-itens-adicionais/itens-pedido-has-itens-adicionais.service';
 import { PrintTcpService } from '../print-tcp/print-tcp.service';
-import { ProdutoService } from '../produto/produto.service';
-import { ItensAdicionaisService } from '../itens-adicionais/itens-adicionais.service';
 import { AtendimentoExternoService } from '../atendimento-externo/atendimento-externo.service';
 
 interface PrintResponse {
@@ -30,12 +27,9 @@ export class PedidoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pedidoRepository: PedidoRepository,
-    private readonly produtoService: ProdutoService,
     private readonly mesaService: MesaService,
     private readonly garcomService: GarcomService,
-    private readonly itensAdicionaisService: ItensAdicionaisService,
     private readonly itensDoPedidoService: ItensDoPedidoService,
-    private readonly itensPedidoHasItensAdicionaisService: ItensPedidoHasItensAdicionaisService,
     private readonly printTcpService: PrintTcpService,
     private readonly atendimentoExternoService: AtendimentoExternoService,
   ) {}
@@ -84,7 +78,7 @@ export class PedidoService {
         id_externo: atendimentoId,
       });
 
-      const itensDoPedido = await this.createItensDoPedido(
+      const itensDoPedido = await this.itensDoPedidoService.createItensDoPedido(
         trx,
         pedido.id,
         createItensDoPedidoDto,
@@ -115,72 +109,13 @@ export class PedidoService {
 
       return {
         printStatus,
-        pedido: pedidoCompleto,
+        message: 'Pedido criado com sucesso!',
       };
     });
   }
 
-  private async createItensDoPedido(
-    trx: Prisma.TransactionClient,
-    pedidoId: number,
-    createItensDoPedidoDto: CreateItensDoPedidoDto[],
-  ) {
-    const itensDoPedido = [];
-
-    for (const itemDto of createItensDoPedidoDto) {
-      const { adicionais = [], ...itemData } = itemDto;
-
-      const produto = await this.produtoService.findOne(itemDto.id_produto);
-      const itemDoPedido = await this.itensDoPedidoService.create(trx, {
-        ...itemData,
-        id_pedido: pedidoId,
-      });
-
-      const itensAdicionais = await this.createItensAdicionais(
-        trx,
-        itemDoPedido.id,
-        adicionais,
-      );
-
-      itensDoPedido.push({
-        ...itemDoPedido,
-        produto,
-        adicionais: itensAdicionais,
-      });
-    }
-
-    return itensDoPedido;
-  }
-
-  private async createItensAdicionais(
-    trx: Prisma.TransactionClient,
-    itemDoPedidoId: number,
-    adicionais: { id_item_adicional: number }[] = [],
-  ) {
-    const adicionaisCriados = [];
-
-    if (!Array.isArray(adicionais)) {
-      throw new BadRequestException('Adicionais deve ser um array.');
-    }
-
-    for (const adicionalDto of adicionais) {
-      await this.itensPedidoHasItensAdicionaisService.create(trx, {
-        ...adicionalDto,
-        id_item_do_pedido: itemDoPedidoId,
-      });
-
-      const adicionalCompleto = await this.itensAdicionaisService.findOne(
-        adicionalDto.id_item_adicional,
-      );
-
-      adicionaisCriados.push({ itemAdicional: adicionalCompleto });
-    }
-
-    return adicionaisCriados;
-  }
-
-  async findAll() {
-    const pedidos = await this.pedidoRepository.findAll();
+  async findAll(skip: number, take: number) {
+    const pedidos = await this.pedidoRepository.findAll(skip, take);
     if (pedidos.length === 0) {
       throw new NotFoundException('Nenhum pedido cadastrado');
     }
@@ -214,14 +149,17 @@ export class PedidoService {
     return pedidos;
   }
 
-  async updateManyStatusEMetodoPagamento(
+  async updateOrdersStatusAndPayment(
     updatePedidosDto: UpdatePedidosDto,
   ): Promise<number> {
     const { ids_numero_mesa } = updatePedidosDto;
     if (!ids_numero_mesa.length)
       throw new NotFoundException('Nenhum pedido encontrado para atualizar');
 
-    return this.pedidoRepository.updateMany(ids_numero_mesa, updatePedidosDto);
+    return this.pedidoRepository.updateOrdersStatusAndPayment(
+      ids_numero_mesa,
+      updatePedidosDto,
+    );
   }
 
   async delete(id: number) {

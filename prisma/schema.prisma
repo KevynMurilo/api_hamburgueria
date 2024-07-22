@@ -55,8 +55,8 @@ model ItemDoPedido {
   id_produto      Int
   quantidade      Int                         @default(1)
   observacoes     String?
-  pedido          Pedido                      @relation(fields: [id_pedido], references: [id])
-  produto         Produto                     @relation(fields: [id_produto], references: [id])
+  pedido          Pedido                      @relation(fields: [id_pedido], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  produto         Produto                     @relation(fields: [id_produto], references: [id], onDelete: Cascade, onUpdate: Cascade)
   itensAdicionais ItemDoPedidoItemAdicional[]
 
   @@map("itens_do_pedidos")
@@ -103,8 +103,8 @@ model ItemAdicional {
 model ItemDoPedidoItemAdicional {
   id_item_do_pedido Int
   id_item_adicional Int
-  itemDoPedido      ItemDoPedido  @relation(fields: [id_item_do_pedido], references: [id])
-  itemAdicional     ItemAdicional @relation(fields: [id_item_adicional], references: [id])
+  itemDoPedido      ItemDoPedido  @relation(fields: [id_item_do_pedido], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  itemAdicional     ItemAdicional @relation(fields: [id_item_adicional], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([id_item_do_pedido, id_item_adicional])
   @@map("item_do_pedido_has_item_adicional")
